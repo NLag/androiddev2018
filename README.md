@@ -10,7 +10,7 @@ Students are expected to:
 Student Info
 =======================
 
-* Name: Le Tan Nhat Linh
-* ID: USTHBI6-080
+* Name: Le Tan Nhat Linh, Le Tuan Hung, Chu Tuan Anh
+* ID: USTHBI6-080, USTHBI6-060, USTHBI6-003
 * Group ID: 4
-* Project Name: 7
+* Project Name: Online Music Player
