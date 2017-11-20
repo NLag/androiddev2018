@@ -12,6 +12,8 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.nlag.onlinemusicplayer.LocalComponents.LocalFragment;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
