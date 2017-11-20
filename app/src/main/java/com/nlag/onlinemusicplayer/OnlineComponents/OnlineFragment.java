@@ -18,6 +18,8 @@ public class OnlineFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
-        return inflater.inflate(R.layout.online_fragment,container,false);
+        View onlineFragmentView = inflater.inflate(R.layout.online_fragment,container,false);
+
+        return onlineFragmentView;
     }
 }
