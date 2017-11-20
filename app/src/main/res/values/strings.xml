@@ -5,4 +5,5 @@
     <string name="action_refresh">Refresh</string>
     <string name="offline_music">Offline Music</string>
     <string name="playlists">Playlists</string>
+    <string name="music_ranking">Music Ranking</string>
 </resources>
