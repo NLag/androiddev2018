@@ -1,5 +1,6 @@
 package com.nlag.onlinemusicplayer;
 
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -22,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
         ViewPager mainPager = (ViewPager) findViewById(R.id.mainpager);
         mainPager.setOffscreenPageLimit(2);
         mainPager.setAdapter(mainAdapter);
+
+        TabLayout mainTabLayout = (TabLayout) findViewById(R.id.maintab);
+        mainTabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+        mainTabLayout.setupWithViewPager(mainPager);
 
     }
 
