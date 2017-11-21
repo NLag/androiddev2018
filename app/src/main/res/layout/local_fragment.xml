@@ -11,7 +11,27 @@
         android:textColor="@color/black"
         android:textSize="25dp"
         android:textStyle="bold"/>
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="@string/allsongs"
+        android:textSize="15dp"
+        android:id="@+id/allsongs"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="@string/recentplay"
+        android:textSize="15dp"
+        android:id="@+id/recentplay"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="@string/downloads"
+        android:textSize="15dp"
+        android:id="@+id/downloads"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

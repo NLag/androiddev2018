@@ -54,7 +54,6 @@ public class OnlineFragment extends Fragment {
     private ArrayList<OnlineMusicRankingSong> rank10songs = new ArrayList<>();
     private MusicRankingAdapter rankingAdapter;
 
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -72,9 +71,10 @@ public class OnlineFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 OnlineMusicRankingSong o = (OnlineMusicRankingSong) musicrank_list.getItemAtPosition(position);
-                Toast.makeText(getContext(), "Selected: " + o.name , Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Selected: " + o.name , Toast.LENGTH_SHORT).show();
             }
         });
+
         return onlineFragmentView;
     }
 
@@ -98,7 +98,6 @@ public class OnlineFragment extends Fragment {
     }
 
     private void parseDataToList(String response) {
-        Log.i( "Json response ", response);
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject(response);
@@ -126,8 +125,6 @@ public class OnlineFragment extends Fragment {
             e.printStackTrace();
         }
     }
-
-
 
     public class MusicRankingAdapter extends BaseAdapter {
 
@@ -161,7 +158,6 @@ public class OnlineFragment extends Fragment {
             ViewHolder holder;
             if (convertView == null) {
                 convertView = layoutInflater.inflate(R.layout.online_musicranking_list_item, null);
-                Log.i("item view inflate", Integer.toString(position));
                 holder = new ViewHolder();
                 holder.thumbnail = (ImageView) convertView.findViewById(R.id.musicrank_item_thumb);
                 holder.name = (TextView) convertView.findViewById(R.id.musicrank_item_name);
@@ -190,6 +186,5 @@ public class OnlineFragment extends Fragment {
             TextView ranknum;
         }
     }
-
 
 }

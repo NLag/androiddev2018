@@ -8,4 +8,8 @@
     <string name="music_ranking">Music Ranking</string>
     <string name="artist">Artist</string>
     <string name="performer">Performer</string>
+    <string name="allsongs">Songs</string>
+    <string name="downloads">Downloads</string>
+    <string name="recentplay">Recent</string>
+    <string name="music_lib">Music Library</string>
 </resources>

@@ -13,6 +13,7 @@
     <ImageView
         android:layout_width="80dp"
         android:layout_height="80dp"
+        android:layout_margin="15dp"
         android:src="@drawable/icon_sample_song"
         android:id="@+id/musicrank_item_thumb"/>
     <LinearLayout

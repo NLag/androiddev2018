@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refesh:
-
+                recreate();
                 return true;
             case R.id.action_search:
                 // User chose the "Search" item, show the app search UI...
