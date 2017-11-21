@@ -6,4 +6,6 @@
     <string name="offline_music">Offline Music</string>
     <string name="playlists">Playlists</string>
     <string name="music_ranking">Music Ranking</string>
+    <string name="artist">Artist</string>
+    <string name="performer">Performer</string>
 </resources>

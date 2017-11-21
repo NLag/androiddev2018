@@ -4,29 +4,28 @@
     android:layout_height="match_parent"
     android:descendantFocusability="blocksDescendants">
     <TextView
-        android:layout_width="0dp"
+        android:layout_width="30dp"
         android:layout_height="match_parent"
         android:text="0"
         android:id="@+id/musicrank_item_ranknum"
-        android:layout_weight="1"
-        android:textAlignment="center"/>
+        android:textAlignment="center"
+        android:textStyle="bold"/>
     <ImageView
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="2"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:src="@drawable/icon_sample_song"
         android:id="@+id/musicrank_item_thumb"/>
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_weight="3">
+        android:orientation="vertical">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:text="Sample Name"
             android:layout_weight="1"
-            android:id="@+id/musicrank_item_name"/>
+            android:id="@+id/musicrank_item_name"
+            android:textStyle="bold"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -36,7 +35,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:text="Sample Artist"
+            android:text="Sample Performer"
             android:layout_weight="1"
             android:id="@+id/musicrank_item_performer"/>
     </LinearLayout>

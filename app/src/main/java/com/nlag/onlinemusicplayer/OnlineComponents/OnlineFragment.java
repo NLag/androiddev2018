@@ -41,12 +41,14 @@ public class OnlineFragment extends Fragment {
         public String artist;
         public String performer;
         public Bitmap thumb;
+        public int ranknum;
 
-        public OnlineMusicRankingSong(String name, String artist, String performer, Bitmap thumb) {
+        public OnlineMusicRankingSong(String name, String artist, String performer, int ranknum, Bitmap thumb) {
             this.name = name;
-            this.artist = artist;
-            this.performer = performer;
+            this.artist = getContext().getString(R.string.artist) + ": " + artist;
+            this.performer = getContext().getString(R.string.performer) +": "+ performer;
             this.thumb = thumb;
+            this.ranknum = ranknum;
         }
     }
     private ArrayList<OnlineMusicRankingSong> rank10songs = new ArrayList<>();
@@ -108,10 +110,11 @@ public class OnlineFragment extends Fragment {
                 final String artist = jsonObjectiter.getString("artists_names");
                 final String performer = jsonObjectiter.getString("performer");
                 String thumburl = jsonObjectiter.getString("thumbnail");
+                final int finalI = i;
                 Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
                     @Override
                     public void onResponse(Bitmap response) {
-                        OnlineMusicRankingSong song = new OnlineMusicRankingSong(name,artist,performer, response);
+                        OnlineMusicRankingSong song = new OnlineMusicRankingSong(name,artist,performer, finalI, response);
                         rank10songs.add(song);
                         rankingAdapter.notifyDataSetChanged();
                     }
@@ -163,6 +166,8 @@ public class OnlineFragment extends Fragment {
                 holder.thumbnail = (ImageView) convertView.findViewById(R.id.musicrank_item_thumb);
                 holder.name = (TextView) convertView.findViewById(R.id.musicrank_item_name);
                 holder.artist = (TextView) convertView.findViewById(R.id.musicrank_item_artist);
+                holder.performer = (TextView) convertView.findViewById(R.id.musicrank_item_performer);
+                holder.ranknum = convertView.findViewById(R.id.musicrank_item_ranknum);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -171,7 +176,9 @@ public class OnlineFragment extends Fragment {
             OnlineMusicRankingSong song = this.rankingsongList.get(position);
             holder.name.setText(song.name);
             holder.artist.setText(song.artist);
+            holder.performer.setText(song.performer);
             holder.thumbnail.setImageBitmap(song.thumb);
+            holder.ranknum.setText(Integer.toString(song.ranknum));
 
             return convertView;
         }
@@ -179,6 +186,8 @@ public class OnlineFragment extends Fragment {
             ImageView thumbnail;
             TextView name;
             TextView artist;
+            TextView performer;
+            TextView ranknum;
         }
     }
 
