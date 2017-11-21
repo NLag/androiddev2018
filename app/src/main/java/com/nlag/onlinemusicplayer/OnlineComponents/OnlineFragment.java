@@ -1,21 +1,25 @@
 package com.nlag.onlinemusicplayer.OnlineComponents;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.nlag.onlinemusicplayer.MainAppQueue;
 import com.nlag.onlinemusicplayer.R;
@@ -32,6 +36,23 @@ import java.util.List;
  */
 
 public class OnlineFragment extends Fragment {
+    private class OnlineMusicRankingSong {
+        public String name;
+        public String artist;
+        public String performer;
+        public Bitmap thumb;
+
+        public OnlineMusicRankingSong(String name, String artist, String performer, Bitmap thumb) {
+            this.name = name;
+            this.artist = artist;
+            this.performer = performer;
+            this.thumb = thumb;
+        }
+    }
+    private ArrayList<OnlineMusicRankingSong> rank10songs = new ArrayList<>();
+    private MusicRankingAdapter rankingAdapter;
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -39,30 +60,30 @@ public class OnlineFragment extends Fragment {
         View onlineFragmentView = inflater.inflate(R.layout.online_fragment,container,false);
 
         //get Music Ranking json
-        ArrayList<JSONObject> rank10songs = getRankFromZingMP3();
+        getRankFromZingMP3();
+        rankingAdapter = new MusicRankingAdapter(getContext(),rank10songs);
 
+        final ListView musicrank_list = (ListView) onlineFragmentView.findViewById(R.id.musicrank_list);
+        musicrank_list.setAdapter(rankingAdapter);
+
+        musicrank_list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                OnlineMusicRankingSong o = (OnlineMusicRankingSong) musicrank_list.getItemAtPosition(position);
+                Toast.makeText(getContext(), "Selected: " + o.name , Toast.LENGTH_LONG).show();
+            }
+        });
         return onlineFragmentView;
     }
 
-    public ArrayList getRankFromZingMP3() {
-        String url = "https://mp3.zing.vn/xhr/chart-realtime?chart=song&time=-1&count=10";
-        final ArrayList<JSONObject> jsonSongsList = new ArrayList<>();
+    private void getRankFromZingMP3() {
+        String url = "https://mp3.zing.vn/xhr/chart-realtime?chart=song&time=-1&count=20";
         StringRequest request = new StringRequest(url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Log.i( "Json response ", response);
-                        JSONObject jsonObject = null;
-                        try {
-                            jsonObject = new JSONObject(response);
-                            JSONArray jsonArray = jsonObject.getJSONObject("data")
-                                    .getJSONArray("song");
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                jsonSongsList.add(jsonArray.getJSONObject(i));
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        parseDataToList(response);
+                        rankingAdapter.notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {
@@ -72,16 +93,46 @@ public class OnlineFragment extends Fragment {
                 }
         );
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
-        return jsonSongsList;
     }
+
+    private void parseDataToList(String response) {
+        Log.i( "Json response ", response);
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONObject("data")
+                    .getJSONArray("song");
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonObjectiter = jsonArray.getJSONObject(i);
+                final String name = jsonObjectiter.getString("name");
+                final String artist = jsonObjectiter.getString("artists_names");
+                final String performer = jsonObjectiter.getString("performer");
+                String thumburl = jsonObjectiter.getString("thumbnail");
+                Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap response) {
+                        OnlineMusicRankingSong song = new OnlineMusicRankingSong(name,artist,performer, response);
+                        rank10songs.add(song);
+                        rankingAdapter.notifyDataSetChanged();
+                    }
+                };
+                ImageRequest imageRequest = new ImageRequest(thumburl, listener, 0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,null);
+                ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public class MusicRankingAdapter extends BaseAdapter {
 
-        private List<OnlineMusicRankingSong> rankingsongList;
+        private ArrayList<OnlineMusicRankingSong> rankingsongList;
         private LayoutInflater layoutInflater;
         private Context context;
 
-        public MusicRankingAdapter(Context context, List<OnlineMusicRankingSong> rankingsongList) {
+        public MusicRankingAdapter(Context context, ArrayList<OnlineMusicRankingSong> rankingsongList) {
             this.context = context;
             this.layoutInflater = LayoutInflater.from(context);
             this.rankingsongList = rankingsongList;
@@ -107,6 +158,7 @@ public class OnlineFragment extends Fragment {
             ViewHolder holder;
             if (convertView == null) {
                 convertView = layoutInflater.inflate(R.layout.online_musicranking_list_item, null);
+                Log.i("item view inflate", Integer.toString(position));
                 holder = new ViewHolder();
                 holder.thumbnail = (ImageView) convertView.findViewById(R.id.musicrank_item_thumb);
                 holder.name = (TextView) convertView.findViewById(R.id.musicrank_item_name);
@@ -117,9 +169,9 @@ public class OnlineFragment extends Fragment {
             }
 
             OnlineMusicRankingSong song = this.rankingsongList.get(position);
-            holder.name.setText(song.getName());
-            holder.artist.setText(song.getArtist());
-            holder.thumbnail.setImageBitmap(song.getThumb());
+            holder.name.setText(song.name);
+            holder.artist.setText(song.artist);
+            holder.thumbnail.setImageBitmap(song.thumb);
 
             return convertView;
         }
