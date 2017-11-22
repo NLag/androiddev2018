@@ -1,5 +1,6 @@
 package com.nlag.onlinemusicplayer;
 
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -7,7 +8,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -28,49 +28,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mainPagerAdapter = new MainFragmentPagerAdapter( getSupportFragmentManager());
-        mainPager = (ViewPager) findViewById(R.id.mainViewPager);
+        mainPager = findViewById(R.id.mainViewPager);
         mainPager.setOffscreenPageLimit(2);
         mainPager.setAdapter(mainPagerAdapter);
 
-        mainTabLayout = (TabLayout) findViewById(R.id.mainTabLayout);
+        mainTabLayout = findViewById(R.id.mainTabLayout);
         mainTabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         mainTabLayout.setupWithViewPager(mainPager);
 
-        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(mainToolbar);
 
-    }
-
-    public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
-
-        private final int PAGE_COUNT = 2;
-        private String titles[] = new String[] { "Online", "Local" };
-
-        public MainFragmentPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public int getCount() {
-            return PAGE_COUNT;
-        }
-
-        @Override
-        // number of pages for a ViewPager
-        public Fragment getItem(int page) {
-            // returns an instance of Fragment corresponding to the specified page
-            switch (page) {
-                case 0: return new OnlineFragment();
-                case 1: return new LocalFragment();
-            }
-            return null; // failsafe
-        }
-
-        @Override
-        public CharSequence getPageTitle(int page) {
-            // returns a tab title corresponding to the specified page
-            return titles[page];
-        }
     }
 
     @Override
@@ -94,16 +62,48 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_search:
                 // User chose the "Search" item, show the app search UI...
                 return true;
-
-            case R.id.action_others:
+            case R.id.action_nowplaying:
                 // User chose the "Settings" item, show the app settings UI...
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
 
+        }
+    }
+
+    public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
+
+        private final int PAGE_COUNT = 2;
+        private String titles[] = new String[]{"Online", "Local"};
+
+        public MainFragmentPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return PAGE_COUNT;
+        }
+
+        @Override
+        // number of pages for a ViewPager
+        public Fragment getItem(int page) {
+            // returns an instance of Fragment corresponding to the specified page
+            switch (page) {
+                case 0:
+                    return new OnlineFragment();
+                case 1:
+                    return new LocalFragment();
+            }
+            return null; // failsafe
+        }
+
+        @Override
+        public CharSequence getPageTitle(int page) {
+            // returns a tab title corresponding to the specified page
+            return titles[page];
         }
     }
 

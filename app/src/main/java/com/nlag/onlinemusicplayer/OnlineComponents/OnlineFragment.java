@@ -74,8 +74,21 @@ public class OnlineFragment extends Fragment {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        parseDataToArrayList(response);
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            JSONArray jsonArray = jsonObject.getJSONObject("data")
+                                    .getJSONArray("song");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObjectIter = jsonArray.getJSONObject(i);
+                                parseJsonDataToArrayList(jsonObjectIter, i + 1, i);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         music_rank_Adapter.notifyDataSetChanged();
+                        for (int i = 0; i < ranklist.size(); i++) {
+                            getSongThumbnail(ranklist.get(i).thumburl, i);
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -87,48 +100,37 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
     }
 
-    public void parseDataToArrayList(String response) {
+    public void parseJsonDataToArrayList(JSONObject songJsonObject, int ranknum, int position) {
         try {
-            JSONObject jsonObject = new JSONObject(response);
-            JSONArray jsonArray = jsonObject.getJSONObject("data")
-                                    .getJSONArray("song");
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObjectIter = jsonArray.getJSONObject(i);
-                String name = jsonObjectIter.getString("name");
-                String artist = jsonObjectIter.getString("artists_names");
-                String performer = jsonObjectIter.getString("performer");
-                String pageurl = "https://mp3.zing.vn" + jsonObjectIter.getString("link");
-                String thumburl = jsonObjectIter.getString("thumbnail");
-                OnlineSong newsong = new OnlineSong(name, artist, performer, i + 1, pageurl, thumburl);
-                ranklist.add(newsong);
-            }
-            getSongThumbnail();
+            String name = songJsonObject.getString("name");
+            String artist = songJsonObject.getString("artists_names");
+            String performer = songJsonObject.getString("performer");
+            String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
+            String thumburl = songJsonObject.getString("thumbnail");
+            OnlineSong newsong = new OnlineSong(name, artist, performer, ranknum, pageurl, thumburl);
+            ranklist.add(position, newsong);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void getSongThumbnail() {
-        for (int i = 0; i < ranklist.size(); i++) {
-            final int finalI = i;
-            ImageRequest imageRequest = new ImageRequest(ranklist.get(i).thumburl,
-                    new Response.Listener<Bitmap>() {
-                        @Override
-                        public void onResponse(Bitmap response) {
-                            ranklist.get(finalI).thumb = response;
-                            music_rank_Adapter.notifyDataSetChanged();
-                        }
-                    },
-                    0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                        }
+    public void getSongThumbnail(String thumburl, final int position) {
+        ImageRequest imageRequest = new ImageRequest(thumburl,
+                new Response.Listener<Bitmap>() {
+                    @Override
+                    public void onResponse(Bitmap response) {
+                        ranklist.get(position).thumb = response;
+                        music_rank_Adapter.notifyDataSetChanged();
                     }
-            );
-            ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
-        }
-
+                },
+                0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                }
+        );
+        ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
     }
 
     public void getSongKey(String pageurl) {
