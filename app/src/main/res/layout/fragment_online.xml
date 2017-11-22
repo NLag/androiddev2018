@@ -10,7 +10,7 @@
         android:textSize="25dp"
         android:textStyle="bold"/>
     <ListView
-        android:id="@+id/musicrank_list"
+        android:id="@+id/music_rank_ListView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 

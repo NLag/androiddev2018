@@ -15,12 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.nlag.onlinemusicplayer.LocalComponents.LocalFragment;
-import com.nlag.onlinemusicplayer.MainActivity;
-import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
 import com.nlag.onlinemusicplayer.R;
-
-import static android.support.v4.view.MenuItemCompat.getActionView;
 
 /**
  * Created by nlag on 11/21/17.
@@ -122,7 +117,7 @@ public class MusicLibraryActivity extends AppCompatActivity {
                 // User chose the "Search" item, show the app search UI...
                 return true;
 
-            case R.id.action_settings:
+            case R.id.action_others:
                 // User chose the "Settings" item, show the app settings UI...
                 return true;
 

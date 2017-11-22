@@ -12,7 +12,7 @@
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <!-- Settings, should always be in the overflow -->
-    <item android:id="@+id/action_settings"
+    <item android:id="@+id/action_others"
         android:title="@string/action_settings"
         app:showAsAction="never"/>
 </menu>

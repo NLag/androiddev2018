@@ -12,29 +12,31 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
 import com.nlag.onlinemusicplayer.LocalComponents.LocalFragment;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
 
 public class MainActivity extends AppCompatActivity {
+    public ViewPager mainPager;
+    public PagerAdapter mainPagerAdapter;
+    public TabLayout mainTabLayout;
+    public Toolbar mainToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        PagerAdapter mainAdapter = new MainFragmentPagerAdapter( getSupportFragmentManager());
-        ViewPager mainPager = (ViewPager) findViewById(R.id.mainpager);
+        mainPagerAdapter = new MainFragmentPagerAdapter( getSupportFragmentManager());
+        mainPager = (ViewPager) findViewById(R.id.mainViewPager);
         mainPager.setOffscreenPageLimit(2);
-        mainPager.setAdapter(mainAdapter);
+        mainPager.setAdapter(mainPagerAdapter);
 
-        TabLayout mainTabLayout = (TabLayout) findViewById(R.id.maintab);
+        mainTabLayout = (TabLayout) findViewById(R.id.mainTabLayout);
         mainTabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         mainTabLayout.setupWithViewPager(mainPager);
 
-        Toolbar mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        mainToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         setSupportActionBar(mainToolbar);
 
     }
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_activity_toolbar_actions, menu);
+        getMenuInflater().inflate(R.menu.main_toolbar_actions, menu);
 
         MenuItem searchItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) searchItem.getActionView();
@@ -93,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 // User chose the "Search" item, show the app search UI...
                 return true;
 
-            case R.id.action_settings:
+            case R.id.action_others:
                 // User chose the "Settings" item, show the app settings UI...
                 return true;
 

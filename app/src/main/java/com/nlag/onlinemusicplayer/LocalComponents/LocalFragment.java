@@ -24,10 +24,10 @@ public class LocalFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
-        View localFragmentView = inflater.inflate(R.layout.local_fragment,container,false);
+        View localFragmentView = inflater.inflate(R.layout.fragment_local,container,false);
 
-        TextView songs = localFragmentView.findViewById(R.id.allsongs);
-        songs.setOnClickListener(new View.OnClickListener() {
+        TextView allsongs = localFragmentView.findViewById(R.id.allsongs);
+        allsongs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), MusicLibraryActivity.class);
@@ -36,8 +36,8 @@ public class LocalFragment extends Fragment {
             }
         });
 
-        TextView recent = localFragmentView.findViewById(R.id.recentplay);
-        recent.setOnClickListener(new View.OnClickListener() {
+        TextView recentplay = localFragmentView.findViewById(R.id.recentplay);
+        recentplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), MusicLibraryActivity.class);
@@ -46,7 +46,7 @@ public class LocalFragment extends Fragment {
             }
         });
 
-        TextView downloaded = localFragmentView.findViewById(R.id.downloads);
+        TextView downloaded = localFragmentView.findViewById(R.id.downloadeds);
         downloaded.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
