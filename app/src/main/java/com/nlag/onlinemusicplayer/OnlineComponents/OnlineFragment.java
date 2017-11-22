@@ -80,7 +80,7 @@ public class OnlineFragment extends Fragment {
                                     .getJSONArray("song");
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject jsonObjectIter = jsonArray.getJSONObject(i);
-                                parseJsonDataToArrayList(jsonObjectIter, i + 1, i);
+                                parseJsonDataToArrayList(jsonObjectIter, Integer.toString(i + 1), i);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -100,7 +100,7 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
     }
 
-    public void parseJsonDataToArrayList(JSONObject songJsonObject, int ranknum, int position) {
+    public void parseJsonDataToArrayList(JSONObject songJsonObject, String ranknum, int position) {
         try {
             String name = songJsonObject.getString("name");
             String artist = songJsonObject.getString("artists_names");
@@ -192,11 +192,11 @@ public class OnlineFragment extends Fragment {
         public String artist;
         public String performer;
         public Bitmap thumb;
-        public int ranknum;
+        public String ranknum;
         public String pageurl;
         public String thumburl;
 
-        public OnlineSong(String name, String artist, String performer, int ranknum, String pageurl, String thumburl) {
+        public OnlineSong(String name, String artist, String performer, String ranknum, String pageurl, String thumburl) {
             this.name = name;
             this.artist = getContext().getString(R.string.artist) + ": " + artist;
             this.performer = getContext().getString(R.string.performer) + ": " + performer;
@@ -254,7 +254,7 @@ public class OnlineFragment extends Fragment {
             holder.artist.setText(song.artist);
             holder.performer.setText(song.performer);
             holder.thumbnail.setImageBitmap(song.thumb);
-            holder.ranknum.setText(Integer.toString(song.ranknum));
+            holder.ranknum.setText(song.ranknum);
 
             return convertView;
         }

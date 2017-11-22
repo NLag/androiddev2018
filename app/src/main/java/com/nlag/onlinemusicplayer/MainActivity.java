@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.i("MainActivity", "onCreate ! ");
 
         mainPagerAdapter = new MainFragmentPagerAdapter( getSupportFragmentManager());
         mainPager = findViewById(R.id.mainViewPager);
@@ -73,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i("MainActivity:", "onDestroy ! ");
+    }
+
     public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
 
         private final int PAGE_COUNT = 2;
@@ -106,6 +114,4 @@ public class MainActivity extends AppCompatActivity {
             return titles[page];
         }
     }
-
-
 }

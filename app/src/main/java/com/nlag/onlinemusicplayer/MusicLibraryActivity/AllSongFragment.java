@@ -48,7 +48,7 @@ public class AllSongFragment extends Fragment {
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTittle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtits = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-
+            Log.i("SONG CURSOR:", songCursor.toString());
             do {
                 String currentTitle = songCursor.getString(songTittle);
                 String currentArtist = songCursor.getString(songArtits);
