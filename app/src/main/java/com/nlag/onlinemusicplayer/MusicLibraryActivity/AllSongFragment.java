@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,11 +36,13 @@ public class AllSongFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_allsongs,container,false);
+
         allsongs_listview = view.findViewById(R.id.allsongs_list);
         localSongsList = new ArrayList<>();
 
         ContentResolver contentResolver = getContext().getContentResolver();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        Log.i("songUripath", songUri.getPath());
         final Cursor songCursor = contentResolver.query(songUri,null,null,null,null);
 
         if (songCursor != null && songCursor.moveToFirst()) {
