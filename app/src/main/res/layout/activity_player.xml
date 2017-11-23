@@ -6,7 +6,7 @@
     android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/musiclib_toolbar"
+        android:id="@+id/player_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/colorAccent"
@@ -14,6 +14,7 @@
         app:title="@string/nowplaying" />
 
     <ImageView
+        android:id="@+id/playersongicon"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:src="@drawable/icon_song" />
@@ -75,18 +76,21 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/playersongtitle"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:text="Sample Song Tittle" />
 
             <TextView
+                android:id="@+id/playersongartist"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:text="Sample Song Artist" />
 
             <TextView
+                android:id="@+id/playersongperformer"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"

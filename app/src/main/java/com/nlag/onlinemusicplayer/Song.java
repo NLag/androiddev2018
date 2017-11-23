@@ -13,17 +13,17 @@ public class Song {
     public String artist;
     public String performer;
 
-    public boolean onlinemusic;
-    public String pageurl;
-    public String thumburl;
+    public boolean onlinemusic = false;
+    public String pageurl = "";
+    public String thumburl = "";
     public Bitmap thumb = null;
     public Drawable thumbsample;
-    public String ranknum;
-    public String songKey;
-    public String JsonData;
-    public String sourcelink;
+    public String ranknum = "";
+    public String songKey = "";
+    public String JsonData = "";
+    public String sourcelink = "";
 
-    public String filepath;
+    public String filepath = " ";
 
     public Song(Context context, String name, String artist, String performer) {
         this.name = name;

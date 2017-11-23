@@ -2,7 +2,9 @@ package com.nlag.onlinemusicplayer.MusicLibraryActivity;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,11 +19,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
 import com.nlag.onlinemusicplayer.R;
 import com.nlag.onlinemusicplayer.Song;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 /**
@@ -53,17 +56,36 @@ public class AllSongFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Song song = (Song) allsongs_ListView.getItemAtPosition(position);
-                Toast.makeText(getContext(), "Selected: " + song.name, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getContext(), MusicPlayerActivity.class);
+                putSonginIntent(intent, song);
+                startActivity(intent);
 
             }
         });
         return view;
     }
 
+    public void putSonginIntent(Intent intent, Song song) {
+        intent.putExtra("title", song.name);
+        intent.putExtra("artist", song.artist);
+        intent.putExtra("performer", song.performer);
+        intent.putExtra("onlinemusic", song.onlinemusic);
+        if (song.onlinemusic) {
+            intent.putExtra("sourcelink", song.sourcelink);
+
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            song.thumb.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            intent.putExtra("thumb", byteArray);
+        } else {
+            intent.putExtra("filepath", song.filepath);
+        }
+    }
+
     public void getAllSong() {
         ContentResolver contentResolver = getContext().getContentResolver();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        final Cursor songCursor = contentResolver.query(songUri,null,null,null,null);
+        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
 
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTittle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
