@@ -23,6 +23,7 @@ import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.nlag.onlinemusicplayer.MainAppQueue;
 import com.nlag.onlinemusicplayer.R;
+import com.nlag.onlinemusicplayer.Song;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +39,7 @@ import java.util.ArrayList;
  */
 
 public class OnlineFragment extends Fragment {
-    public ArrayList<OnlineSong> ranklist = new ArrayList<>();
+    public ArrayList<Song> ranklist = new ArrayList<>();
     public ListView music_rank_ListView;
     public MusicRankingAdapter music_rank_Adapter;
     public MediaPlayer mediaPlayer;
@@ -59,9 +60,9 @@ public class OnlineFragment extends Fragment {
         music_rank_ListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                OnlineSong song = (OnlineSong) music_rank_ListView.getItemAtPosition(position);
+                Song song = (Song) music_rank_ListView.getItemAtPosition(position);
                 Toast.makeText(getContext(), "Selected: " + song.name , Toast.LENGTH_SHORT).show();
-                getSongKey(song.pageurl);
+                getSongKey(song);
             }
         });
 
@@ -107,7 +108,8 @@ public class OnlineFragment extends Fragment {
             String performer = songJsonObject.getString("performer");
             String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
             String thumburl = songJsonObject.getString("thumbnail");
-            OnlineSong newsong = new OnlineSong(name, artist, performer, ranknum, pageurl, thumburl);
+            Song newsong = new Song(getContext(), name, artist, performer);
+            newsong.setOnlineMusic(pageurl, thumburl, ranknum);
             ranklist.add(position, newsong);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -133,8 +135,8 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
     }
 
-    public void getSongKey(String pageurl) {
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, pageurl,
+    public void getSongKey(final Song song) {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, song.pageurl,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -143,7 +145,8 @@ public class OnlineFragment extends Fragment {
                         String songKey = audioElement.attr("data-xml");
                         int keypivot = songKey.lastIndexOf("key=");
                         songKey = songKey.substring(keypivot + 4);
-                        getSongSource(songKey);
+                        song.songKey = songKey;
+                        getSongSource(song);
                     }
                 },
                 new Response.ErrorListener() {
@@ -155,13 +158,14 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(stringRequest);
     }
 
-    public void getSongSource(String songKey) {
-        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + songKey;
+    public void getSongSource(final Song song) {
+        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + song.songKey;
         StringRequest request = new StringRequest(url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        getSourceLinkFromJsonData(response);
+                        song.JsonData = response;
+                        getSourceLinkFromJsonData(song);
                     }
                 },
                 new Response.ErrorListener() {
@@ -173,46 +177,27 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
     }
 
-    public void getSourceLinkFromJsonData(String response) {
+    public void getSourceLinkFromJsonData(Song song) {
         try {
-            JSONObject jsonObject = new JSONObject(response);
+            JSONObject jsonObject = new JSONObject(song.JsonData);
             String sourceLink = jsonObject
                     .getJSONObject("data")
                     .getJSONObject("source")
                     .getString("128");
             sourceLink = "http:" + sourceLink;
+            song.sourcelink = sourceLink;
 //            passToMediaPlayer(sourseLink);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public class OnlineSong {
-        public String name;
-        public String artist;
-        public String performer;
-        public Bitmap thumb;
-        public String ranknum;
-        public String pageurl;
-        public String thumburl;
-
-        public OnlineSong(String name, String artist, String performer, String ranknum, String pageurl, String thumburl) {
-            this.name = name;
-            this.artist = getContext().getString(R.string.artist) + ": " + artist;
-            this.performer = getContext().getString(R.string.performer) + ": " + performer;
-            this.ranknum = ranknum;
-            this.thumburl = thumburl;
-            this.pageurl = pageurl;
-        }
-    }
-
     public class MusicRankingAdapter extends BaseAdapter {
-
-        private ArrayList<OnlineSong> rankingsongList;
+        private ArrayList<Song> rankingsongList;
         private LayoutInflater layoutInflater;
         private Context context;
 
-        public MusicRankingAdapter(Context context, ArrayList<OnlineSong> rankingsongList) {
+        public MusicRankingAdapter(Context context, ArrayList<Song> rankingsongList) {
             this.context = context;
             this.layoutInflater = LayoutInflater.from(context);
             this.rankingsongList = rankingsongList;
@@ -249,11 +234,16 @@ public class OnlineFragment extends Fragment {
                 holder = (ViewHolder) convertView.getTag();
             }
 
-            OnlineSong song = this.rankingsongList.get(position);
+            Song song = this.rankingsongList.get(position);
             holder.name.setText(song.name);
             holder.artist.setText(song.artist);
             holder.performer.setText(song.performer);
-            holder.thumbnail.setImageBitmap(song.thumb);
+            if (song.thumb != null) {
+                holder.thumbnail.setImageBitmap(song.thumb);
+            } else {
+                holder.thumbnail.setImageDrawable(song.thumbsample);
+            }
+
             holder.ranknum.setText(song.ranknum);
 
             return convertView;

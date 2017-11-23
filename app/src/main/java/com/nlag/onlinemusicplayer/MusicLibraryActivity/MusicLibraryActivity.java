@@ -1,5 +1,6 @@
 package com.nlag.onlinemusicplayer.MusicLibraryActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -12,10 +13,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
 import com.nlag.onlinemusicplayer.R;
 
 /**
@@ -27,7 +28,6 @@ public class MusicLibraryActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_library);
-        Log.i("MusicLibrary", "onCreate ! ");
         int pagenum;
         if (savedInstanceState == null) {
             Bundle extras = getIntent().getExtras();
@@ -47,7 +47,7 @@ public class MusicLibraryActivity extends AppCompatActivity {
         // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
-        PagerAdapter musiclibAdapter = new MusicLibFragmentPagerAdapter( getSupportFragmentManager());
+        PagerAdapter musiclibAdapter = new MusicLibFragmentPagerAdapter(getSupportFragmentManager());
         ViewPager musiclibPager = findViewById(R.id.musiclib_pager);
         musiclibPager.setOffscreenPageLimit(3);
         musiclibPager.setAdapter(musiclibAdapter);
@@ -79,14 +79,15 @@ public class MusicLibraryActivity extends AppCompatActivity {
                 onBackPressed();
                 return true;
             case R.id.action_refesh:
-
+                recreate();
                 return true;
             case R.id.action_search:
                 // User chose the "Search" item, show the app search UI...
                 return true;
 
             case R.id.action_nowplaying:
-                // User chose the "Settings" item, show the app settings UI...
+                Intent intent = new Intent(getApplicationContext(), MusicPlayerActivity.class);
+                startActivity(intent);
                 return true;
 
             default:
@@ -95,12 +96,6 @@ public class MusicLibraryActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
 
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i("MusicLibrary", "onDestroy ! ");
     }
 
     public class MusicLibFragmentPagerAdapter extends FragmentPagerAdapter {

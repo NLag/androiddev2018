@@ -12,4 +12,5 @@
     <string name="downloads">Downloads</string>
     <string name="recentplay">Recent</string>
     <string name="music_lib">Music Library</string>
+    <string name="nowplaying">Now Playing</string>
 </resources>
