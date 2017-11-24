@@ -36,12 +36,11 @@ public class Song {
     public String sourcelink = "";
     public String filepath = "";
     Context context;
+    MainAppQueue appQueue;
     MusicRankingAdapter adapter;
 
-    public Song(Context context, MusicRankingAdapter adapter, long songID, String name, String artist) {
+    public Song(Context context, String name, String artist) {
         this.context = context;
-        this.adapter = adapter;
-        this.id = songID;
         this.name = name;
         this.artist = context.getResources().getString(R.string.artist) + ": " + artist;
         this.thumb = BitmapFactory.decodeStream(context.getResources().openRawResource(R.raw.icon_sample_song_thumb));
@@ -63,7 +62,7 @@ public class Song {
                     }
                 }
         );
-        ((MainAppQueue) context.getApplicationContext()).getQueue().add(imageRequest);
+        appQueue.getQueue().add(imageRequest);
     }
 
     public void getSongKey(String pageurl) {
@@ -86,7 +85,7 @@ public class Song {
                     }
                 }
         );
-        ((MainAppQueue) context.getApplicationContext()).getQueue().add(stringRequest);
+        appQueue.getQueue().add(stringRequest);
     }
 
     public void getSongSource(String songKey) {
@@ -97,6 +96,7 @@ public class Song {
                     public void onResponse(String response) {
                         JsonData = response;
                         getSourceLinkFromJsonData(JsonData);
+                        adapter.notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {
@@ -105,7 +105,7 @@ public class Song {
                     }
                 }
         );
-        ((MainAppQueue) context.getApplicationContext()).getQueue().add(request);
+        appQueue.getQueue().add(request);
     }
 
     public void getSourceLinkFromJsonData(String jsonData) {
@@ -122,12 +122,15 @@ public class Song {
         }
     }
 
-    public void setOfflineMusic(String path) {
+    public void setOfflineMusic(long songID, String path) {
         this.onlinemusic = false;
+        this.id = songID;
         this.filepath = path;
     }
 
-    public void setOnlineMusic(String pageurl, String thumburl, String ranknum) {
+    public void setOnlineMusic(MainAppQueue appQueue, MusicRankingAdapter adapter, String pageurl, String thumburl, String ranknum) {
+        this.appQueue = appQueue;
+        this.adapter = adapter;
         this.onlinemusic = true;
         this.pageurl = pageurl;
         this.thumburl = thumburl;

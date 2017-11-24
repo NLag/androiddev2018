@@ -6,9 +6,9 @@
 
     <ImageView
         android:id="@+id/localsong_item_thumb"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_margin="15dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_margin="10dp"
         android:src="@drawable/icon_sample_song" />
 
     <LinearLayout

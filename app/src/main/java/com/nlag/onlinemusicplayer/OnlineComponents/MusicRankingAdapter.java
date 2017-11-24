@@ -52,7 +52,6 @@ public class MusicRankingAdapter extends BaseAdapter {
             holder.thumbnail = convertView.findViewById(R.id.musicrank_item_thumb);
             holder.name = convertView.findViewById(R.id.musicrank_item_name);
             holder.artist = convertView.findViewById(R.id.musicrank_item_artist);
-            holder.performer = convertView.findViewById(R.id.musicrank_item_performer);
             holder.ranknum = convertView.findViewById(R.id.musicrank_item_ranknum);
             convertView.setTag(holder);
         } else {
@@ -63,8 +62,6 @@ public class MusicRankingAdapter extends BaseAdapter {
         holder.name.setText(song.name);
         holder.artist.setText(song.artist);
         holder.thumbnail.setImageBitmap(song.thumb);
-
-
         holder.ranknum.setText(song.ranknum);
 
         return convertView;

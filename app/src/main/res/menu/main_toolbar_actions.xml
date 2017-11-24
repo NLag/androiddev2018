@@ -14,7 +14,11 @@
 
     <!-- Settings, should always be in the overflow -->
     <item
-        android:id="@+id/action_nowplaying"
-        android:title="@string/action_nowplaying"
+        android:id="@+id/action_shuffle"
+        android:title="@string/action_shuffle"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_stop"
+        android:title="@string/action_stop"
         app:showAsAction="never"/>
 </menu>

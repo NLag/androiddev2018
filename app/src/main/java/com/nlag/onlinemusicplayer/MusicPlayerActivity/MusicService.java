@@ -3,11 +3,9 @@ package com.nlag.onlinemusicplayer.MusicPlayerActivity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentUris;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -38,20 +36,20 @@ public class MusicService extends Service implements
         MediaPlayer.OnCompletionListener {
 
     //notification id
-    private static final int NOTIFY_ID = 1;
+    public static final int NOTIFY_ID = 1;
     //binder
-    private final IBinder musicBind = new MusicBinder();
+    public final IBinder musicBind = new MusicBinder();
     //media player
-    private MediaPlayer player;
+    public MediaPlayer player;
     //song list
-    private ArrayList<Song> songs;
+    public ArrayList<Song> songs;
     //current position
-    private int songPosn;
+    public int songPosn;
     //title of current song
-    private String songTitle = "";
+    public String songTitle = "";
     //shuffle flag and random
-    private boolean shuffle = false;
-    private Random rand;
+    public boolean shuffle = false;
+    public Random rand;
 
     public void onCreate() {
         //create the service
@@ -106,13 +104,10 @@ public class MusicService extends Service implements
         songTitle = playSong.name;
         //get id
         long currSong = playSong.id;
-        //set uri
-        Uri trackUri = ContentUris.withAppendedId(
-                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                currSong);
+
         //set the data source
         try {
-            player.setDataSource(getApplicationContext(), trackUri);
+            player.setDataSource(playSong.filepath);
         } catch (Exception e) {
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
@@ -222,7 +217,7 @@ public class MusicService extends Service implements
 
     //binder
     public class MusicBinder extends Binder {
-        MusicService getService() {
+        public MusicService getService() {
             return MusicService.this;
         }
     }

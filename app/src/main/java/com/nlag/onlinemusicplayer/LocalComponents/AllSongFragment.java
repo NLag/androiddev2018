@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -15,8 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
-import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
+import com.nlag.onlinemusicplayer.MainActivity;
 import com.nlag.onlinemusicplayer.R;
 import com.nlag.onlinemusicplayer.Song;
 
@@ -29,10 +29,9 @@ import java.util.ArrayList;
 
 public class AllSongFragment extends Fragment {
 
-    private ArrayList<Song> localSongsList;
-    private ListView allsongs_ListView;
-    private localSongAdapter allsongs_ListAdapter;
-    private MediaPlayer mediaPlayer;
+    public ArrayList<Song> localSongsList;
+    public ListView allsongs_ListView;
+    public localSongAdapter allsongs_ListAdapter;
 
     @Nullable
     @Override
@@ -52,10 +51,8 @@ public class AllSongFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Song song = (Song) allsongs_ListView.getItemAtPosition(position);
-                Intent intent = new Intent(getContext(), MusicPlayerActivity.class);
-                putSonginIntent(intent, song);
-                startActivity(intent);
-
+                Toast.makeText(getContext(), "Selected: " + song.name, Toast.LENGTH_SHORT).show();
+                ((MainActivity) getActivity()).songPicked(position);
             }
         });
         return view;
@@ -86,13 +83,14 @@ public class AllSongFragment extends Fragment {
             int songTittle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtits = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songPath = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int idColumn = songCursor.getColumnIndex(android.provider.MediaStore.Audio.Media._ID);
             do {
+                long thisId = songCursor.getLong(idColumn);
                 String currentTitle = songCursor.getString(songTittle);
                 String currentArtist = songCursor.getString(songArtits);
-                String currentPerformer = "";
                 String currentPath = songCursor.getString(songPath);
-                Song newsong = new Song(getContext(), null, 0, currentTitle, currentArtist);
-                newsong.setOfflineMusic(currentPath);
+                Song newsong = new Song(getContext(), currentTitle, currentArtist);
+                newsong.setOfflineMusic(thisId, currentPath);
                 localSongsList.add(newsong);
             } while (songCursor.moveToNext());
         }

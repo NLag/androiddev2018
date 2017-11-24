@@ -2,7 +2,6 @@ package com.nlag.onlinemusicplayer.OnlineComponents;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,7 +16,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.nlag.onlinemusicplayer.MainAppQueue;
-import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
 import com.nlag.onlinemusicplayer.R;
 import com.nlag.onlinemusicplayer.Song;
 
@@ -33,10 +31,9 @@ import java.util.ArrayList;
  */
 
 public class OnlineFragment extends Fragment {
-    public ArrayList<Song> ranklist = new ArrayList<>();
+    public ArrayList<Song> ranklist;
     public ListView music_rank_ListView;
     public MusicRankingAdapter music_rank_Adapter;
-    public MediaPlayer mediaPlayer;
 
     @Nullable
     @Override
@@ -45,7 +42,8 @@ public class OnlineFragment extends Fragment {
         View onlineFragmentView = inflater.inflate(R.layout.fragment_online,container,false);
 
         //get Music Ranking json
-        getRankListFromZingMP3();
+        ranklist = new ArrayList<>();
+
         music_rank_Adapter = new MusicRankingAdapter(getContext(), ranklist);
 
         music_rank_ListView = onlineFragmentView.findViewById(R.id.music_rank_ListView);
@@ -56,11 +54,10 @@ public class OnlineFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Song song = (Song) music_rank_ListView.getItemAtPosition(position);
                 Toast.makeText(getContext(), "Selected: " + song.name , Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getContext(), MusicPlayerActivity.class);
-                putSonginIntent(intent, song);
-                startActivity(intent);
+
             }
         });
+        getRankListFromZingMP3();
 
         return onlineFragmentView;
     }
@@ -95,9 +92,6 @@ public class OnlineFragment extends Fragment {
                             e.printStackTrace();
                         }
                         music_rank_Adapter.notifyDataSetChanged();
-//                        for (int i = 0; i < ranklist.size(); i++) {
-//                            getSongThumbnail(ranklist.get(i).thumburl, i);
-//                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -115,8 +109,8 @@ public class OnlineFragment extends Fragment {
             String artist = songJsonObject.getString("artists_names");
             String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
             String thumburl = songJsonObject.getString("thumbnail");
-            Song newsong = new Song(getContext(), music_rank_Adapter, 0, name, artist);
-            newsong.setOnlineMusic(pageurl, thumburl, ranknum);
+            Song newsong = new Song(getContext(), name, artist);
+            newsong.setOnlineMusic((MainAppQueue) getActivity().getApplication(), music_rank_Adapter, pageurl, thumburl, ranknum);
             ranklist.add(position, newsong);
         } catch (JSONException e) {
             e.printStackTrace();
