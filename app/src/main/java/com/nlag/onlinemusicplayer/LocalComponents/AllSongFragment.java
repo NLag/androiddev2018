@@ -1,7 +1,6 @@
 package com.nlag.onlinemusicplayer.LocalComponents;
 
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -15,10 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
 import com.nlag.onlinemusicplayer.R;
@@ -68,7 +64,6 @@ public class AllSongFragment extends Fragment {
     public void putSonginIntent(Intent intent, Song song) {
         intent.putExtra("title", song.name);
         intent.putExtra("artist", song.artist);
-        intent.putExtra("performer", song.performer);
         intent.putExtra("onlinemusic", song.onlinemusic);
         if (song.onlinemusic) {
             intent.putExtra("sourcelink", song.sourcelink);
@@ -96,70 +91,12 @@ public class AllSongFragment extends Fragment {
                 String currentArtist = songCursor.getString(songArtits);
                 String currentPerformer = "";
                 String currentPath = songCursor.getString(songPath);
-                Song newsong = new Song(getContext(), currentTitle, currentArtist, currentPerformer);
+                Song newsong = new Song(getContext(), null, 0, currentTitle, currentArtist);
                 newsong.setOfflineMusic(currentPath);
                 localSongsList.add(newsong);
             } while (songCursor.moveToNext());
         }
     }
 
-    public class localSongAdapter extends BaseAdapter {
-        private ArrayList<Song> localsongList;
-        private LayoutInflater layoutInflater;
-        private Context context;
-
-        public localSongAdapter(Context context, ArrayList<Song> localsongList) {
-            this.context = context;
-            this.layoutInflater = LayoutInflater.from(context);
-            this.localsongList = localsongList;
-        }
-
-        @Override
-        public int getCount() {
-            return localsongList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return localsongList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                convertView = layoutInflater.inflate(R.layout.local_song_list_item, null);
-                holder = new ViewHolder();
-                holder.thumbnail = convertView.findViewById(R.id.localsong_item_thumb);
-                holder.name = convertView.findViewById(R.id.localsong_item_name);
-                holder.artist = convertView.findViewById(R.id.localsong_item_artist);
-                holder.performer = convertView.findViewById(R.id.localsong_item_performer);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-
-            Song song = this.localsongList.get(position);
-            holder.name.setText(song.name);
-            holder.artist.setText(song.artist);
-            holder.performer.setText(song.performer);
-            holder.thumbnail.setImageBitmap(song.thumb);
-
-            return convertView;
-        }
-
-        class ViewHolder {
-            ImageView thumbnail;
-            TextView name;
-            TextView artist;
-            TextView performer;
-        }
-
-    }
 
 }

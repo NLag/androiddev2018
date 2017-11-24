@@ -20,8 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MusicLibraryActivity.MusicLibraryActivity" />
-        <activity android:name=".MusicPlayerActivity.MusicPlayerActivity" />
+        <service android:name=".MusicPlayerActivity.MusicService" />
+
     </application>
 
 </manifest>

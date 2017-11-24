@@ -1,6 +1,5 @@
 package com.nlag.onlinemusicplayer.OnlineComponents;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
@@ -11,16 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.nlag.onlinemusicplayer.MainAppQueue;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
@@ -30,9 +24,6 @@ import com.nlag.onlinemusicplayer.Song;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -65,7 +56,6 @@ public class OnlineFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Song song = (Song) music_rank_ListView.getItemAtPosition(position);
                 Toast.makeText(getContext(), "Selected: " + song.name , Toast.LENGTH_SHORT).show();
-                getSongKey(song);
                 Intent intent = new Intent(getContext(), MusicPlayerActivity.class);
                 putSonginIntent(intent, song);
                 startActivity(intent);
@@ -78,7 +68,6 @@ public class OnlineFragment extends Fragment {
     public void putSonginIntent(Intent intent, Song song) {
         intent.putExtra("title", song.name);
         intent.putExtra("artist", song.artist);
-        intent.putExtra("performer", song.performer);
         intent.putExtra("onlinemusic", song.onlinemusic);
         intent.putExtra("sourcelink", song.sourcelink);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -106,9 +95,9 @@ public class OnlineFragment extends Fragment {
                             e.printStackTrace();
                         }
                         music_rank_Adapter.notifyDataSetChanged();
-                        for (int i = 0; i < ranklist.size(); i++) {
-                            getSongThumbnail(ranklist.get(i).thumburl, i);
-                        }
+//                        for (int i = 0; i < ranklist.size(); i++) {
+//                            getSongThumbnail(ranklist.get(i).thumburl, i);
+//                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -124,10 +113,9 @@ public class OnlineFragment extends Fragment {
         try {
             String name = songJsonObject.getString("name");
             String artist = songJsonObject.getString("artists_names");
-            String performer = songJsonObject.getString("performer");
             String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
             String thumburl = songJsonObject.getString("thumbnail");
-            Song newsong = new Song(getContext(), name, artist, performer);
+            Song newsong = new Song(getContext(), music_rank_Adapter, 0, name, artist);
             newsong.setOnlineMusic(pageurl, thumburl, ranknum);
             ranklist.add(position, newsong);
         } catch (JSONException e) {
@@ -135,144 +123,6 @@ public class OnlineFragment extends Fragment {
         }
     }
 
-    public void getSongThumbnail(String thumburl, final int position) {
-        ImageRequest imageRequest = new ImageRequest(thumburl,
-                new Response.Listener<Bitmap>() {
-                    @Override
-                    public void onResponse(Bitmap response) {
-                        ranklist.get(position).thumb = response;
-                        music_rank_Adapter.notifyDataSetChanged();
-                    }
-                },
-                0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                    }
-                }
-        );
-        ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
-    }
 
-    public void getSongKey(final Song song) {
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, song.pageurl,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Document mp3zing = Jsoup.parse(response);
-                        Element audioElement = mp3zing.getElementById("zplayerjs-wrapper");
-                        String songKey = audioElement.attr("data-xml");
-                        int keypivot = songKey.lastIndexOf("key=");
-                        songKey = songKey.substring(keypivot + 4);
-                        song.songKey = songKey;
-                        getSongSource(song);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                    }
-                }
-        );
-        ((MainAppQueue) getActivity().getApplication()).getQueue().add(stringRequest);
-    }
-
-    public void getSongSource(final Song song) {
-        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + song.songKey;
-        StringRequest request = new StringRequest(url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        song.JsonData = response;
-                        getSourceLinkFromJsonData(song);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                    }
-                }
-        );
-        ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
-    }
-
-    public void getSourceLinkFromJsonData(Song song) {
-        try {
-            JSONObject jsonObject = new JSONObject(song.JsonData);
-            String sourceLink = jsonObject
-                    .getJSONObject("data")
-                    .getJSONObject("source")
-                    .getString("128");
-            sourceLink = "http:" + sourceLink;
-            song.sourcelink = sourceLink;
-//            passToMediaPlayer(sourseLink);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public class MusicRankingAdapter extends BaseAdapter {
-        private ArrayList<Song> rankingsongList;
-        private LayoutInflater layoutInflater;
-        private Context context;
-
-        public MusicRankingAdapter(Context context, ArrayList<Song> rankingsongList) {
-            this.context = context;
-            this.layoutInflater = LayoutInflater.from(context);
-            this.rankingsongList = rankingsongList;
-        }
-
-        @Override
-        public int getCount() {
-            return rankingsongList.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return rankingsongList.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                convertView = layoutInflater.inflate(R.layout.online_musicranking_list_item, null);
-                holder = new ViewHolder();
-                holder.thumbnail = convertView.findViewById(R.id.musicrank_item_thumb);
-                holder.name = convertView.findViewById(R.id.musicrank_item_name);
-                holder.artist = convertView.findViewById(R.id.musicrank_item_artist);
-                holder.performer = convertView.findViewById(R.id.musicrank_item_performer);
-                holder.ranknum = convertView.findViewById(R.id.musicrank_item_ranknum);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-
-            Song song = this.rankingsongList.get(position);
-            holder.name.setText(song.name);
-            holder.artist.setText(song.artist);
-            holder.performer.setText(song.performer);
-            holder.thumbnail.setImageBitmap(song.thumb);
-
-
-            holder.ranknum.setText(song.ranknum);
-
-            return convertView;
-        }
-
-        class ViewHolder {
-            ImageView thumbnail;
-            TextView name;
-            TextView artist;
-            TextView performer;
-            TextView ranknum;
-        }
-
-    }
 
 }
