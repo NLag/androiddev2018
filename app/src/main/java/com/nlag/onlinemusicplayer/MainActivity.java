@@ -15,7 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.nlag.onlinemusicplayer.LocalComponents.LocalFragment;
+import com.nlag.onlinemusicplayer.LocalComponents.AllSongFragment;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicPlayerActivity;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
 
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     return new OnlineFragment();
                 case 1:
-                    return new LocalFragment();
+                    return new AllSongFragment();
             }
             return null; // failsafe
         }

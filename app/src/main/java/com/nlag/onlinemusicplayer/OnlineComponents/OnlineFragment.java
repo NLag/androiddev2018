@@ -80,16 +80,12 @@ public class OnlineFragment extends Fragment {
         intent.putExtra("artist", song.artist);
         intent.putExtra("performer", song.performer);
         intent.putExtra("onlinemusic", song.onlinemusic);
-        if (song.onlinemusic) {
-            intent.putExtra("sourcelink", song.sourcelink);
-
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            song.thumb.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            intent.putExtra("thumb", byteArray);
-        } else {
-            intent.putExtra("filepath", song.filepath);
-        }
+        intent.putExtra("sourcelink", song.sourcelink);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        song.thumb.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        intent.putExtra("thumb", byteArray);
+        intent.putExtra("filepath", song.filepath);
     }
 
     public void getRankListFromZingMP3() {
@@ -261,11 +257,8 @@ public class OnlineFragment extends Fragment {
             holder.name.setText(song.name);
             holder.artist.setText(song.artist);
             holder.performer.setText(song.performer);
-            if (song.thumb != null) {
-                holder.thumbnail.setImageBitmap(song.thumb);
-            } else {
-                holder.thumbnail.setImageDrawable(song.thumbsample);
-            }
+            holder.thumbnail.setImageBitmap(song.thumb);
+
 
             holder.ranknum.setText(song.ranknum);
 

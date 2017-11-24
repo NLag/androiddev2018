@@ -1,4 +1,4 @@
-package com.nlag.onlinemusicplayer.MusicLibraryActivity;
+package com.nlag.onlinemusicplayer.LocalComponents;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -148,11 +148,7 @@ public class AllSongFragment extends Fragment {
             holder.name.setText(song.name);
             holder.artist.setText(song.artist);
             holder.performer.setText(song.performer);
-            if (song.thumb != null) {
-                holder.thumbnail.setImageBitmap(song.thumb);
-            } else {
-                holder.thumbnail.setImageDrawable(song.thumbsample);
-            }
+            holder.thumbnail.setImageBitmap(song.thumb);
 
             return convertView;
         }

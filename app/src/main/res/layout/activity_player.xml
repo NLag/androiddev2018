@@ -17,7 +17,7 @@
         android:id="@+id/playersongicon"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:src="@drawable/icon_song" />
+        android:src="@raw/icon_sample_song_thumb" />
 
     <LinearLayout
         android:layout_width="match_parent"

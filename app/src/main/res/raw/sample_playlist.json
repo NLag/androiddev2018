@@ -1,0 +1,33 @@
+{
+  "playlist": [
+    {
+      "name": "Playlist1",
+      "songs": [
+        {
+          "name": "song1"
+        },
+        {
+          "name": "song2"
+        },
+        {
+          "name": "song3"
+        }
+      ]
+    },
+    {
+      "name": "playlist2",
+      "songs": []
+    },
+    {
+      "name": "playlist3",
+      "songs": [
+        {
+          "name": "song3"
+        },
+        {
+          "name": "song4"
+        }
+      ]
+    }
+  ]
+}

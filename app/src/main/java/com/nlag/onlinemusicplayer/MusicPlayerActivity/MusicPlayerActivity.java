@@ -12,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.TextView;
 
 import com.nlag.onlinemusicplayer.R;
@@ -38,7 +37,6 @@ public class MusicPlayerActivity extends AppCompatActivity {
     public String shufflestatus = "off";
     public Song songtoplay;
     public MediaPlayer mediaPlayer;
-    public MediaController mediaController;
     ImageView playbut;
     ImageView repeatbut;
     ImageView shufflebut;
@@ -53,10 +51,9 @@ public class MusicPlayerActivity extends AppCompatActivity {
         myToolbar.setTitle(R.string.nowplaying);
         setSupportActionBar(myToolbar);
         ActionBar ab = getSupportActionBar();
-        // Enable the Up button
         ab.setDisplayHomeAsUpEnabled(true);
 
-        songtoplay = new Song(this, " ", " ", " ");
+        songtoplay = new Song(this, "", "", "");
 
         try {
             initPlayerStatus(savedInstanceState);
@@ -90,25 +87,6 @@ public class MusicPlayerActivity extends AppCompatActivity {
                 songtoplay.filepath = extras.getString("filepath");
             }
         }
-//        else {
-//            songtoplay = new Song(this," "," "," ");
-//        }
-//        if (savedInstanceState == null) {
-//
-//        } else {
-//            songtoplay.name = savedInstanceState.getString("title");
-//            songtoplay.artist = savedInstanceState.getString("artist");
-//            songtoplay.performer = savedInstanceState.getString("performer");
-//            songtoplay.onlinemusic = savedInstanceState.getBoolean("onlinemusic");
-//            if (songtoplay.onlinemusic) {
-//                songtoplay.sourcelink = savedInstanceState.getString("sourcelink");
-//                byte[] byteArray = getIntent().getByteArrayExtra("thumb");
-//                songtoplay.thumb = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-//
-//            } else {
-//                songtoplay.filepath = savedInstanceState.getString("filepath");
-//            }
-//        }
     }
 
     public void initPlayerView() {
@@ -200,10 +178,21 @@ public class MusicPlayerActivity extends AppCompatActivity {
         playstatus = bufferedReader.readLine();
         repeatstatus = bufferedReader.readLine();
         shufflestatus = bufferedReader.readLine();
+
         songtoplay.name = bufferedReader.readLine();
         songtoplay.artist = bufferedReader.readLine();
         songtoplay.performer = bufferedReader.readLine();
         String onlinemusic = bufferedReader.readLine();
+
+        if (playstatus == null || repeatstatus == null || shufflestatus == null || songtoplay.name == null
+                || songtoplay.artist == null || songtoplay.performer == null || onlinemusic == null) {
+            bufferedReader.close();
+            playerstat.delete();
+            String playerthumb = "/sdcard/Nlag/playerthumb.dat";
+            File thumbfile = new File(playerthumb);
+            if (thumbfile.exists()) thumbfile.delete();
+            recreate();
+        }
 
         if (onlinemusic.equals("True")) {
             songtoplay.onlinemusic = true;
@@ -211,10 +200,11 @@ public class MusicPlayerActivity extends AppCompatActivity {
 
             String playerthumb = "/sdcard/Nlag/playerthumb.dat";
             File thumbfile = new File(playerthumb);
-            if (thumbfile.exists()) {
+            if (thumbfile.exists() && thumbfile.canRead()) {
                 FileInputStream inputStream = new FileInputStream(thumbfile);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                 inputStream.close();
+                songtoplay.thumb = bitmap;
             }
 
         } else {
@@ -244,6 +234,9 @@ public class MusicPlayerActivity extends AppCompatActivity {
                 String playerthumb = "/sdcard/Nlag/playerthumb.dat";
                 File thumbfile = new File(playerthumb);
                 if (!thumbfile.exists()) {
+                    thumbfile.createNewFile();
+                } else {
+                    thumbfile.delete();
                     thumbfile.createNewFile();
                 }
                 FileOutputStream outputStream = new FileOutputStream(thumbfile);
