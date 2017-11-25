@@ -1,5 +1,7 @@
 package com.nlag.onlinemusicplayer.MusicPlayerActivity;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -12,7 +14,9 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.nlag.onlinemusicplayer.MainActivity;
 import com.nlag.onlinemusicplayer.MainAppQueue;
+import com.nlag.onlinemusicplayer.R;
 import com.nlag.onlinemusicplayer.Song;
 
 import org.json.JSONException;
@@ -23,6 +27,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by nlag on 11/24/17.
@@ -32,6 +37,7 @@ public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
 
+    private static final int NOTIFY_ID = 1;
     private final IBinder musicBind = new MusicBinder();
     MainAppQueue mainAppQueue;
     //media player
@@ -40,6 +46,13 @@ public class MusicService extends Service implements
     private ArrayList<Song> songs;
     //current position
     private int songPosn;
+    private String songTitle = "";
+    private boolean shuffle = false;
+    private Random rand;
+
+    public void setShuffle() {
+        shuffle = !shuffle;
+    }
 
     public void onCreate() {
         //create the service
@@ -49,12 +62,14 @@ public class MusicService extends Service implements
         //create player
         player = new MediaPlayer();
 
+        rand = new Random();
+
         initMusicPlayer();
     }
 
     public void initMusicPlayer() {
         //set player properties
-        player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
+        player.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
@@ -86,6 +101,7 @@ public class MusicService extends Service implements
         player.reset();
         //get song
         Song playSong = songs.get(songPosn);
+        songTitle = playSong.name;
         if (playSong.onlinemusic == true) {
             getSongSourceAndPlay(playSong);
         } else {
@@ -163,6 +179,28 @@ public class MusicService extends Service implements
     public void onPrepared(MediaPlayer mp) {
         //start playback
         mp.start();
+
+        Intent notIntent = new Intent(this, MainActivity.class);
+        notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
+                notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder builder = new Notification.Builder(this);
+
+        builder.setContentIntent(pendInt)
+                .setSmallIcon(R.drawable.play_button)
+                .setTicker(songTitle)
+                .setOngoing(true)
+                .setContentTitle("Playing")
+                .setContentText(songTitle);
+        Notification not = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
+            not = builder.build();
+        } else {
+            not = builder.getNotification();
+        }
+
+        startForeground(NOTIFY_ID, not);
     }
 
     public void setSong(int songIndex) {
@@ -171,10 +209,16 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        //check if playback has reached the end of a track
+        if (player.getCurrentPosition() > 0) {
+            mp.reset();
+            playNext();
+        }
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
+        mp.reset();
         return false;
     }
 
@@ -210,9 +254,23 @@ public class MusicService extends Service implements
 
     //skip to next
     public void playNext() {
-        songPosn++;
-        if (songPosn >= songs.size()) songPosn = 0;
+        if (shuffle) {
+            int newSong = songPosn;
+            while (newSong == songPosn) {
+                newSong = rand.nextInt(songs.size());
+            }
+            songPosn = newSong;
+        } else {
+            songPosn++;
+            if (songPosn >= songs.size()) songPosn = 0;
+        }
         playSong();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopForeground(true);
     }
 
     public class MusicBinder extends Binder {

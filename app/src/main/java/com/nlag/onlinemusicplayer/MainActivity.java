@@ -37,31 +37,30 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     private MusicService musicSrv;
     private Intent playIntent;
     private boolean musicBound = false;
-    private ServiceConnection musicConnection;
-
-    public ServiceConnection setNewServiceConn() {
-        return (new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
-                //get service
-                musicSrv = binder.getService();
-                //pass list
-                if (mainPager.getCurrentItem() == 0) {
-                    musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
-                    musicSrv.setAppQueue((MainAppQueue) getApplication());
-                } else {
-                    musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
-                }
-                musicBound = true;
+    private ServiceConnection musicConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            //get service
+            musicSrv = binder.getService();
+            //pass list
+            if (mainPager.getCurrentItem() == 0) {
+                musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
+                musicSrv.setAppQueue((MainAppQueue) getApplication());
+            } else {
+                musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
             }
+            musicBound = true;
+        }
 
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                musicBound = false;
-            }
-        });
-    }
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
+
+    private boolean paused = false, playbackPaused = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,30 +105,29 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     //play next
     private void playNext() {
         musicSrv.playNext();
+        if (playbackPaused) {
+            setController();
+            playbackPaused = false;
+        }
         controller.show(0);
     }
 
     //play previous
     private void playPrev() {
         musicSrv.playPrev();
+        if (playbackPaused) {
+            setController();
+            playbackPaused = false;
+        }
         controller.show(0);
-    }
-
-    public void setNewService() {
-        stopService(new Intent(getApplicationContext(), MusicService.class));
-        unbindService(musicConnection);
-        musicConnection = setNewServiceConn();
-        bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-        startService(playIntent);
     }
 
     //start and bind the service when the activity starts
     @Override
     protected void onStart() {
         super.onStart();
-        musicConnection = setNewServiceConn();
         if (playIntent == null) {
-            playIntent = new Intent(getApplicationContext(), MusicService.class);
+            playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
             startService(playIntent);
         }
@@ -145,6 +143,11 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
         musicSrv.setSong(position);
         musicSrv.playSong();
+        if (playbackPaused) {
+            setController();
+            playbackPaused = false;
+        }
+        controller.show(0);
     }
 
     @Override
@@ -183,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
                 return true;
             case R.id.action_shuffle:
-
+                musicSrv.setShuffle();
                 return true;
             case R.id.action_end:
                 stopService(playIntent);
@@ -206,12 +209,34 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        paused = true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (paused) {
+            setController();
+            paused = false;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        controller.hide();
+        super.onStop();
+    }
+
+    @Override
     public void start() {
         musicSrv.go();
     }
 
     @Override
     public void pause() {
+        playbackPaused = true;
         musicSrv.pausePlayer();
     }
 
