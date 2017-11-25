@@ -6,11 +6,7 @@
         android:title="@string/action_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_refesh"
-        android:icon="@drawable/icon_refresh"
-        android:title="@string/action_refresh"
-        app:showAsAction="ifRoom" />
+
 
     <!-- Settings, should always be in the overflow -->
     <item
@@ -18,7 +14,7 @@
         android:title="@string/action_shuffle"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_stop"
+        android:id="@+id/action_end"
         android:title="@string/action_stop"
         app:showAsAction="never"/>
 </menu>

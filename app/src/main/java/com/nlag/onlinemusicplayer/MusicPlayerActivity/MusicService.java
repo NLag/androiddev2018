@@ -1,92 +1,79 @@
 package com.nlag.onlinemusicplayer.MusicPlayerActivity;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.support.annotation.RequiresApi;
-import android.util.Log;
 
-import com.nlag.onlinemusicplayer.MainActivity;
-import com.nlag.onlinemusicplayer.R;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.nlag.onlinemusicplayer.MainAppQueue;
 import com.nlag.onlinemusicplayer.Song;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Created by nlag on 11/24/17.
- */
-
-/*
- * This is demo code to accompany the Mobiletuts+ series:
- * Android SDK: Creating a Music Player
- *
- * Sue Smith - February 2014
  */
 
 public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
 
-    //notification id
-    public static final int NOTIFY_ID = 1;
-    //binder
-    public final IBinder musicBind = new MusicBinder();
+    private final IBinder musicBind = new MusicBinder();
+    MainAppQueue mainAppQueue;
     //media player
-    public MediaPlayer player;
+    private MediaPlayer player;
     //song list
-    public ArrayList<Song> songs;
+    private ArrayList<Song> songs;
     //current position
-    public int songPosn;
-    //title of current song
-    public String songTitle = "";
-    //shuffle flag and random
-    public boolean shuffle = false;
-    public Random rand;
+    private int songPosn;
 
     public void onCreate() {
         //create the service
         super.onCreate();
         //initialize position
         songPosn = 0;
-        //random
-        rand = new Random();
         //create player
         player = new MediaPlayer();
-        //initialize
+
         initMusicPlayer();
     }
 
     public void initMusicPlayer() {
         //set player properties
-        player.setWakeMode(getApplicationContext(),
-                PowerManager.PARTIAL_WAKE_LOCK);
+        player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        //set listeners
         player.setOnPreparedListener(this);
         player.setOnCompletionListener(this);
         player.setOnErrorListener(this);
     }
 
-    //pass song list
     public void setList(ArrayList<Song> theSongs) {
         songs = theSongs;
     }
 
-    //activity will bind to service
+    public void setAppQueue(MainAppQueue appQueue) {
+        mainAppQueue = appQueue;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return musicBind;
     }
 
-    //release resources when unbind
     @Override
     public boolean onUnbind(Intent intent) {
         player.stop();
@@ -94,132 +81,110 @@ public class MusicService extends Service implements
         return false;
     }
 
-    //play a song
     public void playSong() {
-        //play
+        //play a song
         player.reset();
         //get song
         Song playSong = songs.get(songPosn);
-        //get title
-        songTitle = playSong.name;
-        //get id
-        long currSong = playSong.id;
-
-        //set the data source
-        try {
-            player.setDataSource(playSong.filepath);
-        } catch (Exception e) {
-            Log.e("MUSIC SERVICE", "Error setting data source", e);
+        if (playSong.onlinemusic == true) {
+            getSongSourceAndPlay(playSong);
+        } else {
+            try {
+                player.setDataSource(playSong.filepath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            player.prepareAsync();
         }
-        player.prepareAsync();
+
     }
 
-    //set the song
+    public void getSongSourceAndPlay(final Song playsong) {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, playsong.pageurl,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Document mp3zing = Jsoup.parse(response);
+                        Element audioElement = mp3zing.getElementById("zplayerjs-wrapper");
+                        String songKey = audioElement.attr("data-xml");
+                        int keypivot = songKey.lastIndexOf("key=");
+                        songKey = songKey.substring(keypivot + 4);
+                        playsong.songKey = songKey;
+                        fromKeyGetSongJson(playsong);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                }
+        );
+        mainAppQueue.getQueue().add(stringRequest);
+    }
+
+    public void fromKeyGetSongJson(final Song playsong) {
+        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + playsong.songKey;
+        StringRequest request = new StringRequest(url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        playsong.JsonData = response;
+                        getSourceLinkAndPass(playsong);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                    }
+                }
+        );
+        mainAppQueue.getQueue().add(request);
+    }
+
+    public void getSourceLinkAndPass(Song playsong) {
+        try {
+            JSONObject jsonObject = new JSONObject(playsong.JsonData);
+            String sourceLink = jsonObject
+                    .getJSONObject("data")
+                    .getJSONObject("source")
+                    .getString("128");
+            sourceLink = "http:" + sourceLink;
+            playsong.sourcelink = sourceLink;
+            player.setDataSource(playsong.sourcelink);
+            player.prepareAsync();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        //start playback
+        mp.start();
+    }
+
     public void setSong(int songIndex) {
         songPosn = songIndex;
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        //check if playback has reached the end of a track
-        if (player.getCurrentPosition() > 0) {
-            mp.reset();
-            playNext();
-        }
+
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.v("MUSIC PLAYER", "Playback Error");
-        mp.reset();
         return false;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        //start playback
-        mp.start();
-        //notification
-        Intent notIntent = new Intent(this, MainActivity.class);
-        notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
-                notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification.Builder builder = new Notification.Builder(this);
-
-        builder.setContentIntent(pendInt)
-                .setSmallIcon(R.drawable.play_button)
-                .setTicker(songTitle)
-                .setOngoing(true)
-                .setContentTitle("Playing")
-                .setContentText(songTitle);
-        Notification not = builder.build();
-        startForeground(NOTIFY_ID, not);
-    }
-
-    //playback methods
-    public int getPosn() {
-        return player.getCurrentPosition();
-    }
-
-    public int getDur() {
-        return player.getDuration();
-    }
-
-    public boolean isPng() {
-        return player.isPlaying();
-    }
-
-    public void pausePlayer() {
-        player.pause();
-    }
-
-    public void seek(int posn) {
-        player.seekTo(posn);
-    }
-
-    public void go() {
-        player.start();
-    }
-
-    //skip to previous track
-    public void playPrev() {
-        songPosn--;
-        if (songPosn < 0) songPosn = songs.size() - 1;
-        playSong();
-    }
-
-    //skip to next
-    public void playNext() {
-        if (shuffle) {
-            int newSong = songPosn;
-            while (newSong == songPosn) {
-                newSong = rand.nextInt(songs.size());
-            }
-            songPosn = newSong;
-        } else {
-            songPosn++;
-            if (songPosn >= songs.size()) songPosn = 0;
-        }
-        playSong();
-    }
-
-    @Override
-    public void onDestroy() {
-        stopForeground(true);
-    }
-
-    //toggle shuffle
-    public void setShuffle() {
-        shuffle = !shuffle;
-    }
-
-    //binder
     public class MusicBinder extends Binder {
         public MusicService getService() {
             return MusicService.this;
         }
     }
 
+
 }
+

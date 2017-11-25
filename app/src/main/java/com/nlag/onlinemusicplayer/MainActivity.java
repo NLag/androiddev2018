@@ -17,17 +17,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.MediaController;
 import android.widget.Toast;
 
 import com.nlag.onlinemusicplayer.LocalComponents.AllSongFragment;
-import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicController;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicService;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
 
-public class MainActivity extends AppCompatActivity implements MediaController.MediaPlayerControl {
+public class MainActivity extends AppCompatActivity {
     public ViewPager mainPager;
     public MainFragmentPagerAdapter mainPagerAdapter;
     public TabLayout mainTabLayout;
@@ -36,32 +33,33 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     //service
     private MusicService musicSrv;
     private Intent playIntent;
-    //binding
     private boolean musicBound = false;
 
-    //controller
-    private MusicController controller;
+    private ServiceConnection musicConnection;
 
-    //activity and playback pause flags
-    private boolean paused = false, playbackPaused = false;
-    //connect to the service
-    private ServiceConnection musicConnection = new ServiceConnection() {
+    public ServiceConnection setNewServiceConn() {
+        return (new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+                //get service
+                musicSrv = binder.getService();
+                //pass list
+                if (mainPager.getCurrentItem() == 0) {
+                    musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
+                    musicSrv.setAppQueue((MainAppQueue) getApplication());
+                } else {
+                    musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
+                }
+                musicBound = true;
+            }
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
-            //get service
-            musicSrv = binder.getService();
-            //pass list
-            musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(1)).localSongsList);
-            musicBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }
-    };
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                musicBound = false;
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,15 +78,41 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
         mainToolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(mainToolbar);
 
-        setController();
+        mainPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                setNewService();
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                setNewService();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+    }
+
+    public void setNewService() {
+        this.stopService(new Intent(this, MusicService.class));
+        this.unbindService(musicConnection);
+        musicConnection = setNewServiceConn();
+        bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+        startService(playIntent);
     }
 
     //start and bind the service when the activity starts
     @Override
     protected void onStart() {
         super.onStart();
+        musicConnection = setNewServiceConn();
         if (playIntent == null) {
-            playIntent = new Intent(this, MusicService.class);
+            playIntent = new Intent(getApplicationContext(), MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
             startService(playIntent);
         }
@@ -98,11 +122,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     public void songPicked(int position) {
         musicSrv.setSong(position);
         musicSrv.playSong();
-        if (playbackPaused) {
-            setController();
-            playbackPaused = false;
-        }
-        controller.show(0);
     }
 
     @Override
@@ -136,17 +155,14 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_refesh:
-                recreate();
-                return true;
             case R.id.action_search:
                 // User chose the "Search" item, show the app search UI...
 
                 return true;
             case R.id.action_shuffle:
-                musicSrv.setShuffle();
+
                 return true;
-            case R.id.action_stop:
+            case R.id.action_end:
                 stopService(playIntent);
                 musicSrv = null;
                 System.exit(0);
@@ -157,128 +173,6 @@ public class MainActivity extends AppCompatActivity implements MediaController.M
                 return super.onOptionsItemSelected(item);
 
         }
-    }
-
-    @Override
-    public boolean canPause() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekBackward() {
-        return true;
-    }
-
-    @Override
-    public boolean canSeekForward() {
-        return true;
-    }
-
-    @Override
-    public int getAudioSessionId() {
-        return 0;
-    }
-
-    @Override
-    public int getBufferPercentage() {
-        return 0;
-    }
-
-    @Override
-    public int getCurrentPosition() {
-        if (musicSrv != null && musicBound && musicSrv.isPng())
-            return musicSrv.getPosn();
-        else return 0;
-    }
-
-    @Override
-    public int getDuration() {
-        if (musicSrv != null && musicBound && musicSrv.isPng())
-            return musicSrv.getDur();
-        else return 0;
-    }
-
-    @Override
-    public boolean isPlaying() {
-        if (musicSrv != null && musicBound)
-            return musicSrv.isPng();
-        return false;
-    }
-
-    @Override
-    public void pause() {
-        playbackPaused = true;
-        musicSrv.pausePlayer();
-    }
-
-    @Override
-    public void seekTo(int pos) {
-        musicSrv.seek(pos);
-    }
-
-    @Override
-    public void start() {
-        musicSrv.go();
-    }
-
-    //set the controller up
-    private void setController() {
-        controller = new MusicController(this);
-        //set previous and next button listeners
-        controller.setPrevNextListeners(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playNext();
-            }
-        }, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playPrev();
-            }
-        });
-        //set and show
-        controller.setMediaPlayer(this);
-        controller.setAnchorView(findViewById(R.id.mainViewPager));
-        controller.setEnabled(true);
-    }
-
-    private void playNext() {
-        musicSrv.playNext();
-        if (playbackPaused) {
-            setController();
-            playbackPaused = false;
-        }
-        controller.show(0);
-    }
-
-    private void playPrev() {
-        musicSrv.playPrev();
-        if (playbackPaused) {
-            setController();
-            playbackPaused = false;
-        }
-        controller.show(0);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        paused = true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (paused) {
-            setController();
-            paused = false;
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        controller.hide();
-        super.onStop();
     }
 
     @Override
