@@ -17,24 +17,26 @@ import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.MediaController.MediaPlayerControl;
 import android.widget.Toast;
 
 import com.nlag.onlinemusicplayer.LocalComponents.AllSongFragment;
+import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicController;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicService;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
     public ViewPager mainPager;
     public MainFragmentPagerAdapter mainPagerAdapter;
     public TabLayout mainTabLayout;
     public Toolbar mainToolbar;
-
+    public MusicController controller;
     //service
     private MusicService musicSrv;
     private Intent playIntent;
     private boolean musicBound = false;
-
     private ServiceConnection musicConnection;
 
     public ServiceConnection setNewServiceConn() {
@@ -78,29 +80,44 @@ public class MainActivity extends AppCompatActivity {
         mainToolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(mainToolbar);
 
-        mainPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                setNewService();
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                setNewService();
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
+        setController();
 
     }
 
+    private void setController() {
+        //set the controller up
+        controller = new MusicController(this);
+        controller.setPrevNextListeners(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playNext();
+            }
+        }, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                playPrev();
+            }
+        });
+        controller.setMediaPlayer(this);
+        controller.setAnchorView(findViewById(R.id.mainViewPager));
+        controller.setEnabled(true);
+    }
+
+    //play next
+    private void playNext() {
+        musicSrv.playNext();
+        controller.show(0);
+    }
+
+    //play previous
+    private void playPrev() {
+        musicSrv.playPrev();
+        controller.show(0);
+    }
+
     public void setNewService() {
-        this.stopService(new Intent(this, MusicService.class));
-        this.unbindService(musicConnection);
+        stopService(new Intent(getApplicationContext(), MusicService.class));
+        unbindService(musicConnection);
         musicConnection = setNewServiceConn();
         bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
         startService(playIntent);
@@ -120,6 +137,12 @@ public class MainActivity extends AppCompatActivity {
 
     //user song select
     public void songPicked(int position) {
+        if (mainPager.getCurrentItem() == 0) {
+            musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
+            musicSrv.setAppQueue((MainAppQueue) getApplication());
+        } else {
+            musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
+        }
         musicSrv.setSong(position);
         musicSrv.playSong();
     }
@@ -182,6 +205,66 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    @Override
+    public void start() {
+        musicSrv.go();
+    }
+
+    @Override
+    public void pause() {
+        musicSrv.pausePlayer();
+    }
+
+    @Override
+    public int getDuration() {
+        if (musicSrv != null && musicBound && musicSrv.isPng()) {
+            return musicSrv.getDur();
+        } else return 0;
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        if (musicSrv != null && musicBound && musicSrv.isPng()) {
+            return musicSrv.getPosn();
+        } else return 0;
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        musicSrv.seek(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        if (musicSrv != null && musicBound) {
+            return musicSrv.isPng();
+        } else return false;
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return 0;
+    }
 
     public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
         private final int PAGE_COUNT = 2;
@@ -233,4 +316,5 @@ public class MainActivity extends AppCompatActivity {
             return registeredFragments.get(position);
         }
     }
+
 }

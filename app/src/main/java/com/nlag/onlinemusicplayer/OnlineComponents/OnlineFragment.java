@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -58,7 +57,6 @@ public class OnlineFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Song song = (Song) music_rank_ListView.getItemAtPosition(position);
-                Toast.makeText(getContext(), "Selected: " + song.name , Toast.LENGTH_SHORT).show();
                 ((MainActivity) getActivity()).songPicked(position);
             }
         });
