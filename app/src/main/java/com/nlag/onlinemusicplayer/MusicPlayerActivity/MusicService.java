@@ -9,6 +9,7 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.support.v4.app.NotificationCompat;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -40,6 +41,7 @@ public class MusicService extends Service implements
     private static final int NOTIFY_ID = 1;
     private final IBinder musicBind = new MusicBinder();
     MainAppQueue mainAppQueue;
+    private String CHANNEL_ID = "com.nlag.onlinemusicplayer.NOTI";
     //media player
     private MediaPlayer player;
     //song list
@@ -180,25 +182,22 @@ public class MusicService extends Service implements
         //start playback
         mp.start();
 
-        Intent notIntent = new Intent(this, MainActivity.class);
-        notIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
-                notIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-        Notification.Builder builder = new Notification.Builder(this);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.play_button)
+                        .setTicker(songTitle)
+                        .setOngoing(true)
+                        .setContentTitle("Playing")
+                        .setContentText(songTitle);
 
-        builder.setContentIntent(pendInt)
-                .setSmallIcon(R.drawable.play_button)
-                .setTicker(songTitle)
-                .setOngoing(true)
-                .setContentTitle("Playing")
-                .setContentText(songTitle);
-        Notification not = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            not = builder.build();
-        } else {
-            not = builder.getNotification();
-        }
+        mBuilder.setContentIntent(pendingIntent);
+
+        Notification not = mBuilder.build();
 
         startForeground(NOTIFY_ID, not);
     }
