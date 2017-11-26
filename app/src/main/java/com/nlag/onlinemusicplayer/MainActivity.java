@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.TabLayout;
@@ -19,13 +20,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.MediaController.MediaPlayerControl;
-import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.nlag.onlinemusicplayer.LocalComponents.AllSongFragment;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicController;
 import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicService;
+import com.nlag.onlinemusicplayer.OnlineComponents.MusicRankingAdapter;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
     public ViewPager mainPager;
@@ -163,13 +176,90 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        Toast.makeText(MainActivity.this, query, Toast.LENGTH_SHORT).show();
+                        String searchurl;
+
+                        if (query.contains("https://mp3.zing.vn/")) {
+                            searchurl = query;
+                        } else {
+                            searchurl = "https://mp3.zing.vn/bai-hat/" + query.toUpperCase() + ".html";
+                        }
+
+                        StringRequest stringRequest = new StringRequest(Request.Method.GET, searchurl,
+                                new Response.Listener<String>() {
+                                    @Override
+                                    public void onResponse(String response) {
+                                        Document mp3zing = Jsoup.parse(response);
+                                        Element audioElement = mp3zing.getElementById("zplayerjs-wrapper");
+                                        String songKey = audioElement.attr("data-xml");
+                                        int keypivot = songKey.lastIndexOf("key=");
+                                        songKey = songKey.substring(keypivot + 4);
+
+                                        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + songKey;
+                                        StringRequest request = new StringRequest(url,
+                                                new Response.Listener<String>() {
+                                                    @Override
+                                                    public void onResponse(String response) {
+                                                        try {
+                                                            JSONObject jsonData = new JSONObject(response);
+                                                            JSONObject songJsonObject = jsonData.getJSONObject("data");
+                                                            String name = songJsonObject.getString("name");
+                                                            String artist = songJsonObject.getString("artists_names");
+                                                            String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
+                                                            String thumburl = songJsonObject.getString("thumbnail");
+                                                            String sourcelink = songJsonObject.getJSONObject("source")
+                                                                    .getString("128");
+                                                            final Song newsong = new Song(MainActivity.this, name, artist);
+                                                            newsong.setOnlineMusic(pageurl, thumburl, "?");
+                                                            newsong.sourcelink = sourcelink;
+                                                            ((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist.add(0, newsong);
+                                                            final MusicRankingAdapter msrankadapter = ((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).music_rank_Adapter;
+                                                            msrankadapter.notifyDataSetChanged();
+
+                                                            ImageRequest imageRequest = new ImageRequest(newsong.thumburl,
+                                                                    new Response.Listener<Bitmap>() {
+                                                                        @Override
+                                                                        public void onResponse(Bitmap response) {
+                                                                            newsong.thumb = response;
+                                                                            msrankadapter.notifyDataSetChanged();
+                                                                        }
+                                                                    },
+                                                                    0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
+                                                                    new Response.ErrorListener() {
+                                                                        @Override
+                                                                        public void onErrorResponse(VolleyError error) {
+                                                                        }
+                                                                    }
+                                                            );
+                                                            ((MainAppQueue) getApplication()).getQueue().add(imageRequest);
+//                                                        getSourceLinkAndPass(song);
+                                                        } catch (JSONException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                },
+                                                new Response.ErrorListener() {
+                                                    @Override
+                                                    public void onErrorResponse(VolleyError error) {
+                                                    }
+                                                }
+                                        );
+                                        ((MainAppQueue) getApplication()).getQueue().add(request);
+
+                                    }
+                                },
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                    }
+                                }
+                        );
+                        ((MainAppQueue) getApplication()).getQueue().add(stringRequest);
+
                         return false;
                     }
 
                     @Override
                     public boolean onQueryTextChange(String newText) {
-//                        Toast.makeText(MainActivity.this, newText, Toast.LENGTH_SHORT).show();
                         return false;
                     }
                 }
