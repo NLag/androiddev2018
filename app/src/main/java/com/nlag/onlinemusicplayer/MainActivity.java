@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     };
 
     public boolean paused = false, playbackPaused = false;
+    public int durtn = 0, postn = 0;
 
 
     @Override
@@ -341,20 +342,25 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public int getDuration() {
         if (musicSrv != null && musicBound && musicSrv.isPng()) {
-            return musicSrv.getDur();
-        } else return 0;
+            return durtn = musicSrv.getDur();
+        }
+//        else durtn = 0;
+        return durtn;
     }
 
     @Override
     public int getCurrentPosition() {
         if (musicSrv != null && musicBound && musicSrv.isPng()) {
-            return musicSrv.getPosn();
-        } else return 0;
+            return postn = musicSrv.getPosn();
+        }
+//        else return 0;
+        return postn;
     }
 
     @Override
     public void seekTo(int pos) {
         musicSrv.seek(pos);
+        postn = pos;
     }
 
     @Override
