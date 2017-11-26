@@ -38,19 +38,19 @@ public class MusicService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
 
-    private static final int NOTIFY_ID = 1;
-    private final IBinder musicBind = new MusicBinder();
-    MainAppQueue mainAppQueue;
-    private String CHANNEL_ID = "com.nlag.onlinemusicplayer.NOTI";
+    public static final int NOTIFY_ID = 1;
+    public final IBinder musicBind = new MusicBinder();
+    public String CHANNEL_ID = "com.nlag.onlinemusicplayer.NOTI";
     //media player
-    private MediaPlayer player;
+    public MediaPlayer player;
     //song list
-    private ArrayList<Song> songs;
+    public ArrayList<Song> songs;
     //current position
-    private int songPosn;
-    private String songTitle = "";
-    private boolean shuffle = false;
-    private Random rand;
+    public int songPosn;
+    public String songTitle = "";
+    public boolean shuffle = false;
+    public Random rand;
+    MainAppQueue mainAppQueue;
 
     public void setShuffle() {
         shuffle = !shuffle;

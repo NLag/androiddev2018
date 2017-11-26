@@ -18,9 +18,9 @@ import java.util.ArrayList;
  */
 
 public class MusicRankingAdapter extends BaseAdapter {
-    private ArrayList<Song> rankingsongList;
-    private LayoutInflater layoutInflater;
-    private Context context;
+    public ArrayList<Song> rankingsongList;
+    public LayoutInflater layoutInflater;
+    public Context context;
 
     public MusicRankingAdapter(Context context, ArrayList<Song> rankingsongList) {
         this.context = context;

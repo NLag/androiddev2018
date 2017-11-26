@@ -18,9 +18,9 @@ import java.util.ArrayList;
  */
 
 public class localSongAdapter extends BaseAdapter {
-    private ArrayList<Song> localsongList;
-    private LayoutInflater layoutInflater;
-    private Context context;
+    public ArrayList<Song> localsongList;
+    public LayoutInflater layoutInflater;
+    public Context context;
 
     public localSongAdapter(Context context, ArrayList<Song> localsongList) {
         this.context = context;

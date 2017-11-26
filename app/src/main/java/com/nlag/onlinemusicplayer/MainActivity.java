@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.TabLayout;
@@ -47,10 +48,10 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     public Toolbar mainToolbar;
     public MusicController controller;
     //service
-    private MusicService musicSrv;
-    private Intent playIntent;
-    private boolean musicBound = false;
-    private ServiceConnection musicConnection = new ServiceConnection() {
+    public MusicService musicSrv;
+    public Intent playIntent;
+    public boolean musicBound = false;
+    public ServiceConnection musicConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
@@ -64,6 +65,13 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
             }
             musicBound = true;
+            musicSrv.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.start();
+                    controller.show();
+                }
+            });
         }
 
         @Override
@@ -72,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         }
     };
 
-    private boolean paused = false, playbackPaused = false;
+    public boolean paused = false, playbackPaused = false;
 
 
     @Override
@@ -96,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
     }
 
-    private void setController() {
+    public void setController() {
         //set the controller up
         controller = new MusicController(this);
         controller.setPrevNextListeners(new View.OnClickListener() {
@@ -116,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     //play next
-    private void playNext() {
+    public void playNext() {
         musicSrv.playNext();
         if (playbackPaused) {
             setController();
@@ -126,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     //play previous
-    private void playPrev() {
+    public void playPrev() {
         musicSrv.playPrev();
         if (playbackPaused) {
             setController();
@@ -382,9 +390,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     }
 
     public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
-        private final int PAGE_COUNT = 2;
+        public final int PAGE_COUNT = 2;
+        public String titles[] = new String[]{"Online", "Local"};
         SparseArray<Fragment> registeredFragments = new SparseArray<Fragment>();
-        private String titles[] = new String[]{"Online", "Local"};
 
         public MainFragmentPagerAdapter(FragmentManager fm) {
             super(fm);
