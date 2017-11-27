@@ -40,7 +40,7 @@ public class MusicService extends Service implements
 
     public static final int NOTIFY_ID = 1;
     public final IBinder musicBind = new MusicBinder();
-    public String CHANNEL_ID = "com.nlag.onlinemusicplayer.NOTI";
+    public String CHANNEL_ID = "com.nlag.onlinemusicplayer.ANDROID";
     //media player
     public MediaPlayer player;
     //song list
