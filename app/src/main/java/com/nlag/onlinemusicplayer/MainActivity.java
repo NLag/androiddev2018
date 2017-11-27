@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             musicSrv.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    mp.start();
+                    musicSrv.onPrepared(mp);
                     controller.show();
                 }
             });
