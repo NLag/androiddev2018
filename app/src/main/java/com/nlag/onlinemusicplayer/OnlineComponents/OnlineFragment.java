@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -38,12 +39,15 @@ public class OnlineFragment extends Fragment {
     public ArrayList<Song> ranklist;
     public ListView music_rank_ListView;
     public MusicRankingAdapter music_rank_Adapter;
+    public TextView onlineTitle;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
         View onlineFragmentView = inflater.inflate(R.layout.fragment_online,container,false);
+
+        onlineTitle = onlineFragmentView.findViewById(R.id.online_title);
 
         //get Music Ranking json
         ranklist = new ArrayList<>();
