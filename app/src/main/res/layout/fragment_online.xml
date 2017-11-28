@@ -8,9 +8,10 @@
         android:id="@+id/online_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="10dp"
         android:text="@string/music_ranking"
-        android:textColor="@color/black"
-        android:textSize="25dp"
+        android:textColor="@color/white"
+        android:textSize="20dp"
         android:textStyle="bold" />
     <ListView
         android:id="@+id/music_rank_ListView"

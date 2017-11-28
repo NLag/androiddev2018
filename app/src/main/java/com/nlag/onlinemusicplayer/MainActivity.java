@@ -102,8 +102,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         mainToolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(mainToolbar);
 
-
         setController();
+
     }
 
     public void setController() {
@@ -283,6 +283,9 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_reset:
+                recreate();
+                return true;
             case R.id.action_search:
                 // User chose the "Search" item, show the app search UI...
 

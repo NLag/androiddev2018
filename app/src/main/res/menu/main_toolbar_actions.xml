@@ -14,6 +14,11 @@
         android:title="@string/action_shuffle"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_reset"
+        android:title="@string/action_reset"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_end"
         android:title="@string/action_stop"
         app:showAsAction="never"/>

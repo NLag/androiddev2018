@@ -10,4 +10,8 @@
     <color name="red">#FF0000</color>
     <color name="yellow">#FFFF00</color>
     <color name="olive">#808000</color>
+    <color name="gray">#665d5d</color>
+    <color name="background">#660066</color>
+    <color name="tab">#278c10</color>
+    <color name="orange">#CC5500</color>
 </resources>

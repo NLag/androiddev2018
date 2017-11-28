@@ -30,7 +30,7 @@ public class Song {
     public Song(Context context, String name, String artist) {
         this.context = context;
         this.name = name;
-        this.artist = context.getResources().getString(R.string.artist) + ": " + artist;
+        this.artist = artist;
         this.thumb = BitmapFactory.decodeStream(context.getResources().openRawResource(R.raw.icon_sample_song_thumb));
     }
 

@@ -13,5 +13,6 @@
     <string name="recentplay">Recent</string>
     <string name="music_lib">Music Library</string>
     <string name="nowplaying">Now Playing</string>
-    <string name="action_stop">END</string>
+    <string name="action_stop">End</string>
+    <string name="action_reset">Reset</string>
 </resources>
