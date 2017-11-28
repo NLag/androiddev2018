@@ -262,7 +262,8 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
 
                     @Override
                     public boolean onQueryTextSubmit(String query) {
-                        String searchurl = "https://mp3.zing.vn/tim-kiem/bai-hat.html?q=" + query;
+                        String querynospace = query.replace(" ", "+");
+                        String searchurl = "https://mp3.zing.vn/tim-kiem/bai-hat.html?q=" + querynospace;
                         onlineFragment = (OnlineFragment) mainPagerAdapter.getRegisteredFragment(0);
                         onlineFragment.onlineTitle.setText("Search Result");
                         onlineFragment.ranklist.clear();
