@@ -4,7 +4,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -16,31 +15,17 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.MediaController.MediaPlayerControl;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.nlag.onlinemusicplayer.LocalComponents.AllSongFragment;
-import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicController;
-import com.nlag.onlinemusicplayer.MusicPlayerActivity.MusicService;
+import com.nlag.onlinemusicplayer.LocalComponents.LocalFragment;
+import com.nlag.onlinemusicplayer.MusicPlayerService.MusicController;
+import com.nlag.onlinemusicplayer.MusicPlayerService.MusicService;
 import com.nlag.onlinemusicplayer.OnlineComponents.OnlineFragment;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class MainActivity extends AppCompatActivity implements MediaPlayerControl {
     public ViewPager mainPager;
@@ -63,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
                 musicSrv.setAppQueue((MainAppQueue) getApplication());
             } else {
-                musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
+                musicSrv.setList(((LocalFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
             }
             musicBound = true;
             musicSrv.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -162,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
             musicSrv.setList(((OnlineFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).ranklist);
             musicSrv.setAppQueue((MainAppQueue) getApplication());
         } else {
-            musicSrv.setList(((AllSongFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
+            musicSrv.setList(((LocalFragment) mainPagerAdapter.getRegisteredFragment(mainPager.getCurrentItem())).localSongsList);
         }
         musicSrv.setSong(position);
         musicSrv.playSong();
@@ -173,80 +158,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         controller.show(0);
     }
 
-    public void searchByCustomString(String url) {
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Document mp3zing = Jsoup.parse(response);
-                        Elements searchlist = mp3zing.getElementsByClass("item-song");
-                        Log.i("SEARCHSIZE::", String.valueOf(searchlist.size()));
-                        for (int i = 0; i < searchlist.size(); i++) {
-                            Element itemElement = searchlist.get(i);
-                            String itemsongkey = itemElement.attr("data-code");
-                            Log.i("Itemdatacode::", itemsongkey);
-                            String urlkey = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + itemsongkey;
 
-                            StringRequest request = new StringRequest(urlkey,
-                                    new Response.Listener<String>() {
-                                        @Override
-                                        public void onResponse(String response) {
-                                            try {
-                                                JSONObject jsonData = new JSONObject(response);
-                                                JSONObject songJsonObject = jsonData.getJSONObject("data");
-                                                String name = songJsonObject.getString("name");
-                                                Log.i("Itemname::", name);
-                                                String artist = songJsonObject.getString("artists_names");
-                                                String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
-                                                String thumburl = songJsonObject.getString("thumbnail");
-                                                String sourcelink = songJsonObject.getJSONObject("source")
-                                                        .getString("128");
-                                                final Song newsong = new Song(MainActivity.this, name, artist);
-                                                newsong.setOnlineMusic(pageurl, thumburl, "");
-                                                newsong.sourcelink = sourcelink;
-
-                                                onlineFragment.ranklist.add(newsong);
-                                                onlineFragment.music_rank_Adapter.notifyDataSetChanged();
-
-                                                ImageRequest imageRequest = new ImageRequest(newsong.thumburl,
-                                                        new Response.Listener<Bitmap>() {
-                                                            @Override
-                                                            public void onResponse(Bitmap response) {
-                                                                newsong.thumb = response;
-                                                                onlineFragment.music_rank_Adapter.notifyDataSetChanged();
-                                                            }
-                                                        },
-                                                        0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
-                                                        new Response.ErrorListener() {
-                                                            @Override
-                                                            public void onErrorResponse(VolleyError error) {
-                                                            }
-                                                        }
-                                                );
-                                                ((MainAppQueue) getApplication()).getQueue().add(imageRequest);
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    },
-                                    new Response.ErrorListener() {
-                                        @Override
-                                        public void onErrorResponse(VolleyError error) {
-                                        }
-                                    }
-                            );
-                            ((MainAppQueue) getApplication()).getQueue().add(request);
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                    }
-                }
-        );
-        ((MainAppQueue) getApplication()).getQueue().add(stringRequest);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -259,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
         // Configure the search info and add any event listeners...
         searchView.setOnQueryTextListener(
                 new SearchView.OnQueryTextListener() {
-
                     @Override
                     public boolean onQueryTextSubmit(String query) {
                         String querynospace = query.replace(" ", "+");
@@ -267,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                         onlineFragment = (OnlineFragment) mainPagerAdapter.getRegisteredFragment(0);
                         onlineFragment.onlineTitle.setText("Search Result");
                         onlineFragment.ranklist.clear();
-                        searchByCustomString(searchurl);
+                        onlineFragment.searchByCustomString(((MainAppQueue) getApplication()), searchurl);
                         return false;
                     }
 
@@ -424,7 +335,7 @@ public class MainActivity extends AppCompatActivity implements MediaPlayerContro
                 case 0:
                     return new OnlineFragment();
                 case 1:
-                    return new AllSongFragment();
+                    return new LocalFragment();
             }
             return null; // failsafe
         }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 
@@ -38,21 +40,22 @@ import java.util.ArrayList;
 public class OnlineFragment extends Fragment {
     public ArrayList<Song> ranklist;
     public ListView music_rank_ListView;
-    public MusicRankingAdapter music_rank_Adapter;
+    public OnlineSongAdapter music_rank_Adapter;
     public TextView onlineTitle;
+    MainAppQueue appQueue;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-//        return super.onCreateView(inflater, container, savedInstanceState);
+
         View onlineFragmentView = inflater.inflate(R.layout.fragment_online,container,false);
 
         onlineTitle = onlineFragmentView.findViewById(R.id.online_title);
 
-        //get Music Ranking json
+        //new Music Ranking json
         ranklist = new ArrayList<>();
 
-        music_rank_Adapter = new MusicRankingAdapter(getContext(), ranklist);
+        music_rank_Adapter = new OnlineSongAdapter(getContext(), ranklist);
 
         music_rank_ListView = onlineFragmentView.findViewById(R.id.music_rank_ListView);
         music_rank_ListView.setAdapter(music_rank_Adapter);
@@ -86,7 +89,7 @@ public class OnlineFragment extends Fragment {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        music_rank_Adapter.notifyDataSetChanged();
+
                         music_rank_Adapter.notifyDataSetChanged();
                         for (int i = 0; i < ranklist.size(); i++) {
                             getSongThumbnail(ranklist.get(i));
@@ -135,18 +138,23 @@ public class OnlineFragment extends Fragment {
         ((MainAppQueue) getActivity().getApplication()).getQueue().add(imageRequest);
     }
 
-    public void getSongSource(final Song song) {
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, song.pageurl,
+    public void searchByCustomString(final MainAppQueue appQueue, String url) {
+        this.appQueue = appQueue;
+        //get webpage with search result of string
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         Document mp3zing = Jsoup.parse(response);
-                        Element audioElement = mp3zing.getElementById("zplayerjs-wrapper");
-                        String songKey = audioElement.attr("data-xml");
-                        int keypivot = songKey.lastIndexOf("key=");
-                        songKey = songKey.substring(keypivot + 4);
-                        song.songKey = songKey;
-                        fromKeyGetSongJson(song);
+                        Elements searchlist = mp3zing.getElementsByClass("item-song");
+                        Log.i("SEARCHSIZE::", String.valueOf(searchlist.size()));
+                        for (int i = 0; i < searchlist.size(); i++) {
+                            Element itemElement = searchlist.get(i);
+                            String itemsongkey = itemElement.attr("data-code");
+                            Log.i("Itemdatacode::", itemsongkey);
+                            String urlkey = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + itemsongkey;
+                            getSongByKey(urlkey);
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -155,17 +163,50 @@ public class OnlineFragment extends Fragment {
                     }
                 }
         );
-        ((MainAppQueue) getActivity().getApplication()).getQueue().add(stringRequest);
+        appQueue.getQueue().add(stringRequest);
     }
 
-    public void fromKeyGetSongJson(final Song song) {
-        String url = "https://mp3.zing.vn/xhr/media/get-source?type=audio&key=" + song.songKey;
-        StringRequest request = new StringRequest(url,
+    public void getSongByKey(String urlkey) {
+        StringRequest request = new StringRequest(urlkey,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        song.JsonData = response;
-                        getSourceLinkAndPass(song);
+                        try {
+                            JSONObject jsonData = new JSONObject(response);
+                            JSONObject songJsonObject = jsonData.getJSONObject("data");
+                            String name = songJsonObject.getString("name");
+                            Log.i("Itemname::", name);
+                            String artist = songJsonObject.getString("artists_names");
+                            String pageurl = "https://mp3.zing.vn" + songJsonObject.getString("link");
+                            String thumburl = songJsonObject.getString("thumbnail");
+                            String sourcelink = songJsonObject.getJSONObject("source")
+                                    .getString("128");
+                            final Song newsong = new Song(getContext(), name, artist);
+                            newsong.setOnlineMusic(pageurl, thumburl, "");
+                            newsong.sourcelink = sourcelink;
+
+                            ranklist.add(newsong);
+                            music_rank_Adapter.notifyDataSetChanged();
+
+                            ImageRequest imageRequest = new ImageRequest(newsong.thumburl,
+                                    new Response.Listener<Bitmap>() {
+                                        @Override
+                                        public void onResponse(Bitmap response) {
+                                            newsong.thumb = response;
+                                            music_rank_Adapter.notifyDataSetChanged();
+                                        }
+                                    },
+                                    0, 0, ImageView.ScaleType.CENTER, Bitmap.Config.ARGB_8888,
+                                    new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                        }
+                                    }
+                            );
+                            appQueue.getQueue().add(imageRequest);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 },
                 new Response.ErrorListener() {
@@ -174,22 +215,6 @@ public class OnlineFragment extends Fragment {
                     }
                 }
         );
-        ((MainAppQueue) getActivity().getApplication()).getQueue().add(request);
+        appQueue.getQueue().add(request);
     }
-
-    public void getSourceLinkAndPass(Song song) {
-        try {
-            JSONObject jsonObject = new JSONObject(song.JsonData);
-            String sourceLink = jsonObject
-                    .getJSONObject("data")
-                    .getJSONObject("source")
-                    .getString("128");
-            sourceLink = "http:" + sourceLink;
-            song.sourcelink = sourceLink;
-//            passToMediaPlayer(sourseLink);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

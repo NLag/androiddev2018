@@ -23,22 +23,22 @@ import java.util.ArrayList;
  * Created by nlag on 11/21/17.
  */
 
-public class AllSongFragment extends Fragment {
+public class LocalFragment extends Fragment {
 
     public ArrayList<Song> localSongsList;
     public ListView allsongs_ListView;
-    public localSongAdapter allsongs_ListAdapter;
+    public LocalSongAdapter allsongs_ListAdapter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 //        return super.onCreateView(inflater, container, savedInstanceState);
-        View view = inflater.inflate(R.layout.fragment_allsongs,container,false);
+        View view = inflater.inflate(R.layout.fragment_localsongs, container, false);
 
         localSongsList = new ArrayList<>();
         getAllSong();
 
-        allsongs_ListAdapter = new localSongAdapter(getContext(), localSongsList);
+        allsongs_ListAdapter = new LocalSongAdapter(getContext(), localSongsList);
 
         allsongs_ListView = view.findViewById(R.id.allsongs_list);
         allsongs_ListView.setAdapter(allsongs_ListAdapter);

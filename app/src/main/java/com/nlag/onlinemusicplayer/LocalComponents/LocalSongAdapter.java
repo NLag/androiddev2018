@@ -17,12 +17,12 @@ import java.util.ArrayList;
  * Created by nlag on 11/24/17.
  */
 
-public class localSongAdapter extends BaseAdapter {
+public class LocalSongAdapter extends BaseAdapter {
     public ArrayList<Song> localsongList;
     public LayoutInflater layoutInflater;
     public Context context;
 
-    public localSongAdapter(Context context, ArrayList<Song> localsongList) {
+    public LocalSongAdapter(Context context, ArrayList<Song> localsongList) {
         this.context = context;
         this.layoutInflater = LayoutInflater.from(context);
         this.localsongList = localsongList;

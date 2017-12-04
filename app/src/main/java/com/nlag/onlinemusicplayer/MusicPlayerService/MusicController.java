@@ -1,4 +1,4 @@
-package com.nlag.onlinemusicplayer.MusicPlayerActivity;
+package com.nlag.onlinemusicplayer.MusicPlayerService;
 
 import android.content.Context;
 import android.widget.MediaController;

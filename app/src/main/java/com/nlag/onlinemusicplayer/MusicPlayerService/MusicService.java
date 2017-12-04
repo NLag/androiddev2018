@@ -1,4 +1,4 @@
-package com.nlag.onlinemusicplayer.MusicPlayerActivity;
+package com.nlag.onlinemusicplayer.MusicPlayerService;
 
 import android.app.Notification;
 import android.app.PendingIntent;

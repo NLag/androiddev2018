@@ -17,12 +17,12 @@ import java.util.ArrayList;
  * Created by nlag on 11/24/17.
  */
 
-public class MusicRankingAdapter extends BaseAdapter {
+public class OnlineSongAdapter extends BaseAdapter {
     public ArrayList<Song> rankingsongList;
     public LayoutInflater layoutInflater;
     public Context context;
 
-    public MusicRankingAdapter(Context context, ArrayList<Song> rankingsongList) {
+    public OnlineSongAdapter(Context context, ArrayList<Song> rankingsongList) {
         this.context = context;
         this.layoutInflater = LayoutInflater.from(context);
         this.rankingsongList = rankingsongList;
@@ -47,7 +47,7 @@ public class MusicRankingAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = layoutInflater.inflate(R.layout.online_musicranking_list_item, null);
+            convertView = layoutInflater.inflate(R.layout.online_songs_list_item, null);
             holder = new ViewHolder();
             holder.thumbnail = convertView.findViewById(R.id.musicrank_item_thumb);
             holder.name = convertView.findViewById(R.id.musicrank_item_name);
